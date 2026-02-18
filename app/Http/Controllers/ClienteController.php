@@ -205,14 +205,29 @@ class ClienteController extends Controller
     }
 
     /**
-     * Verificar si un RUC ya existe en la BD
+     * Verificar si un RUC ya existe en la BD y devolver datos del cliente
      */
     public function verificarRuc($ruc)
     {
-        $existe = Cliente::where('ruc', $ruc)->exists();
+        $cliente = Cliente::where('ruc', $ruc)->first();
+
+        if ($cliente) {
+            return response()->json([
+                'existe' => true,
+                'cliente' => [
+                    'id' => $cliente->id,
+                    'ruc' => $cliente->ruc,
+                    'razon' => $cliente->razon,
+                    'direccion' => $cliente->direccion,
+                    'telefono1' => $cliente->telefono1,
+                    'telefono2' => $cliente->telefono2,
+                ],
+                'url_edit' => route('clientes.edit', $cliente->id)
+            ]);
+        }
 
         return response()->json([
-            'existe' => $existe
+            'existe' => false
         ]);
     }
 }

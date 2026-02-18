@@ -344,6 +344,7 @@ let direccionesCount = 0;
 // Las consultas a RENIEC/SUNAT se realizan a través del proxy seguro en el backend.
 
 // Buscar RUC en BD y API
+// Buscar RUC en BD y API
 async function buscarRUC() {
     const ruc = document.getElementById('ruc').value.trim();
     const alertDiv = document.getElementById('rucAlert');
@@ -370,12 +371,39 @@ async function buscarRUC() {
         const dataDB = await responseDB.json();
 
         if (dataDB.existe) {
+            // El RUC ya existe - mostrar alerta con botón para ir a editar
             alertDiv.innerHTML = `
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-circle"></i> Este RUC ya está registrado en el sistema
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="alert-heading mb-2">
+                                <i class="bi bi-exclamation-circle"></i> Cliente ya registrado
+                            </h6>
+                            <p class="mb-2">
+                                <strong>RUC:</strong> ${dataDB.cliente.ruc}<br>
+                                <strong>Razón Social:</strong> ${dataDB.cliente.razon}<br>
+                                <strong>Dirección:</strong> ${dataDB.cliente.direccion}
+                            </p>
+                            <hr class="my-2">
+                            <div class="d-flex gap-2 align-items-center">
+                                <a href="${dataDB.url_edit}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-pencil-square"></i> Ir a Editar Cliente
+                                </a>
+                                <small class="text-muted">o complete el formulario con otro RUC</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+                    </div>
                 </div>
             `;
+
+            // Limpiar campos para evitar confusión
+            document.getElementById('razon').value = '';
+            document.getElementById('direccion').value = '';
+            document.getElementById('telefono1').value = '';
+            document.getElementById('telefono2').value = '';
+
             return;
         }
 
@@ -397,7 +425,7 @@ async function buscarRUC() {
         } else {
             alertDiv.innerHTML = `
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="bi bi-info-circle"></i> RUC no encontrado en SUNAT. Complete los datos manualmente
+                    <i class="bi bi-info-circle"></i> ${dataAPI.message || 'RUC no encontrado en SUNAT. Complete los datos manualmente'}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
