@@ -110,27 +110,75 @@
                 </div>
                 <div class="card-body">
                     <div id="direccionesContainer">
-                        @forelse($cliente->direcciones as $index => $direccion)
-                            <div class="card mb-2" id="direccion-{{ $index }}">
-                                <div class="card-body p-2">
+                        @forelse($cliente->direcciones as $index => $dir)
+                            <div class="card mb-2 border-info" id="direccion-{{ $index }}">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong class="small text-info"><i class="bi bi-building"></i> Agencia {{ $index + 1 }}</strong>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerDireccion({{ $index }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-1">Dirección <span class="text-danger">*</span></label>
+                                        <input type="text"
+                                               name="direcciones[]"
+                                               class="form-control form-control-sm"
+                                               value="{{ $dir->direccion }}"
+                                               placeholder="Ej: Av. Principal 123"
+                                               maxlength="250">
+                                    </div>
                                     <div class="row g-2">
-                                        <div class="col-md-10">
-                                            <label class="form-label small mb-1">
-                                                <i class="bi bi-building"></i> Agencia {{ $index + 1 }}
-                                            </label>
-                                            <input type="text" name="direcciones[]" class="form-control form-control-sm" value="{{ $direccion->direccion }}" placeholder="Ej: Av. Principal 123, Lima" maxlength="250">
+                                        <div class="col-md-4">
+                                            <label class="form-label small mb-1">Departamento</label>
+                                            <select class="form-select form-select-sm"
+                                                    id="departamento-{{ $index }}"
+                                                    onchange="cargarProvincias(this.value, {{ $index }})"
+                                                    data-selected-departamento="{{ $dir->distrito?->provincia?->departamento?->id }}">
+                                                <option value="">-- Departamento --</option>
+                                                @foreach($departamentos as $dep)
+                                                    <option value="{{ $dep->id }}"
+                                                        {{ $dir->distrito?->provincia?->departamento?->id == $dep->id ? 'selected' : '' }}>
+                                                        {{ $dep->nombre }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small mb-1 invisible">-</label>
-                                            <button type="button" class="btn btn-sm btn-danger w-100" onclick="removerDireccion({{ $index }})">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                        <div class="col-md-4">
+                                            <label class="form-label small mb-1">Provincia</label>
+                                            <select class="form-select form-select-sm"
+                                                    id="provincia-{{ $index }}"
+                                                    onchange="cargarDistritos(this.value, {{ $index }})"
+                                                    data-selected-provincia="{{ $dir->distrito?->provincia?->id }}"
+                                                    {{ $dir->distrito ? '' : 'disabled' }}>
+                                                <option value="">-- Provincia --</option>
+                                                @if($dir->distrito?->provincia)
+                                                    <option value="{{ $dir->distrito->provincia->id }}" selected>
+                                                        {{ $dir->distrito->provincia->nombre }}
+                                                    </option>
+                                                @endif
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small mb-1">Distrito</label>
+                                            <select class="form-select form-select-sm"
+                                                    id="distrito-{{ $index }}"
+                                                    name="distritos[]"
+                                                    data-selected-distrito="{{ $dir->distrito_id }}"
+                                                    {{ $dir->distrito ? '' : 'disabled' }}>
+                                                <option value="">-- Distrito --</option>
+                                                @if($dir->distrito)
+                                                    <option value="{{ $dir->distrito->id }}" selected>
+                                                        {{ $dir->distrito->nombre }}
+                                                    </option>
+                                                @endif
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         @empty
-                            <p class="text-muted small text-center py-3">No hay direcciones adicionales</p>
+                            <p class="text-muted small text-center py-3" id="sinDirecciones">No hay direcciones adicionales</p>
                         @endforelse
                     </div>
                 </div>
@@ -467,33 +515,117 @@ function removerContacto(contactoId){
     actualizarListaContactos();
 }
 
-// Agregar dirección
+// Departamentos disponibles (inyectados desde el controlador)
+const DEPARTAMENTOS = @json($departamentos);
+
+function departamentosOptions() {
+    return DEPARTAMENTOS.map(d => `<option value="${d.id}">${d.nombre}</option>`).join('');
+}
+
+// Agregar dirección nueva con ubigeo encadenado
 function agregarDireccion(){
     direccionesCount++;
+    const n = direccionesCount;
     const container = document.getElementById('direccionesContainer');
 
-    const direccionHtml = `
-        <div class="card mb-2" id="direccion-${direccionesCount}">
-            <div class="card-body p-2">
+    // Quitar mensaje de "sin direcciones" si existe
+    const sinDir = document.getElementById('sinDirecciones');
+    if (sinDir) sinDir.remove();
+
+    const html = `
+        <div class="card mb-2 border-info" id="direccion-${n}">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong class="small text-info"><i class="bi bi-building"></i> Agencia ${n + 1}</strong>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerDireccion(${n})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small mb-1">Dirección <span class="text-danger">*</span></label>
+                    <input type="text" name="direcciones[]" class="form-control form-control-sm"
+                           placeholder="Ej: Av. Principal 123" maxlength="250">
+                </div>
                 <div class="row g-2">
-                    <div class="col-md-10">
-                        <label class="form-label small mb-1">
-                            <i class="bi bi-building"></i> Agencia ${direccionesCount + 1}
-                        </label>
-                        <input type="text" name="direcciones[]" class="form-control form-control-sm" placeholder="Ej: Av. Principal 123, Lima" maxlength="250">
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Departamento</label>
+                        <select class="form-select form-select-sm" id="departamento-${n}"
+                                onchange="cargarProvincias(this.value, ${n})">
+                            <option value="">-- Departamento --</option>
+                            ${departamentosOptions()}
+                        </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1 invisible">-</label>
-                        <button type="button" class="btn btn-sm btn-danger w-100" onclick="removerDireccion(${direccionesCount})">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Provincia</label>
+                        <select class="form-select form-select-sm" id="provincia-${n}"
+                                disabled onchange="cargarDistritos(this.value, ${n})">
+                            <option value="">-- Provincia --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Distrito</label>
+                        <select class="form-select form-select-sm" id="distrito-${n}"
+                                name="distritos[]" disabled>
+                            <option value="">-- Distrito --</option>
+                        </select>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
-    container.insertAdjacentHTML('beforeend', direccionHtml);
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+// Carga provincias vía AJAX al cambiar departamento
+async function cargarProvincias(departamentoId, n) {
+    const selectProv = document.getElementById(`provincia-${n}`);
+    const selectDist = document.getElementById(`distrito-${n}`);
+
+    selectProv.innerHTML = '<option value="">Cargando...</option>';
+    selectProv.disabled = true;
+    selectDist.innerHTML = '<option value="">-- Distrito --</option>';
+    selectDist.disabled = true;
+
+    if (!departamentoId) {
+        selectProv.innerHTML = '<option value="">-- Provincia --</option>';
+        return;
+    }
+
+    try {
+        const res = await fetch(`/ubigeo/provincias/${departamentoId}`);
+        const data = await res.json();
+        selectProv.innerHTML = '<option value="">-- Provincia --</option>' +
+            data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        selectProv.disabled = false;
+    } catch {
+        selectProv.innerHTML = '<option value="">Error al cargar</option>';
+    }
+}
+
+// Carga distritos vía AJAX al cambiar provincia
+async function cargarDistritos(provinciaId, n, selectedDistrito = null) {
+    const selectDist = document.getElementById(`distrito-${n}`);
+
+    selectDist.innerHTML = '<option value="">Cargando...</option>';
+    selectDist.disabled = true;
+
+    if (!provinciaId) {
+        selectDist.innerHTML = '<option value="">-- Distrito --</option>';
+        return;
+    }
+
+    try {
+        const res = await fetch(`/ubigeo/distritos/${provinciaId}`);
+        const data = await res.json();
+        selectDist.innerHTML = '<option value="">-- Distrito --</option>' +
+            data.map(d =>
+                `<option value="${d.id}" ${selectedDistrito && d.id == selectedDistrito ? 'selected' : ''}>${d.nombre}</option>`
+            ).join('');
+        selectDist.disabled = false;
+    } catch {
+        selectDist.innerHTML = '<option value="">Error al cargar</option>';
+    }
 }
 
 // Remover dirección
@@ -509,10 +641,49 @@ document.querySelectorAll('input[maxlength="8"], input[maxlength="15"]').forEach
     });
 });
 
-// Inicializar
-document.addEventListener('DOMContentLoaded', function() {
-    // Asegurar que los contactos existentes estén en el array
-    contactosSeleccionados = contactosSeleccionados.filter(contacto => contacto.id !== undefined);
+// Inicializar: recarga provincias y distritos de las direcciones existentes con ubigeo
+document.addEventListener('DOMContentLoaded', async function () {
+    contactosSeleccionados = contactosSeleccionados.filter(c => c.id !== undefined);
+
+    // Para cada dirección existente que tenga departamento pre-seleccionado,
+    // recargar sus provincias y distritos para que los selects queden funcionales
+    const depSelects = document.querySelectorAll('[id^="departamento-"]');
+
+    for (const depSelect of depSelects) {
+        const n = depSelect.id.split('-')[1];
+        const depId = depSelect.value;
+        const provSelect = document.getElementById(`provincia-${n}`);
+        const distSelect = document.getElementById(`distrito-${n}`);
+
+        if (!depId) continue;
+
+        const selectedProv = provSelect?.dataset?.selectedProvincia;
+        const selectedDist = distSelect?.dataset?.selectedDistrito;
+
+        // Recargar provincias
+        try {
+            const res = await fetch(`/ubigeo/provincias/${depId}`);
+            const data = await res.json();
+            provSelect.innerHTML = '<option value="">-- Provincia --</option>' +
+                data.map(p =>
+                    `<option value="${p.id}" ${p.id == selectedProv ? 'selected' : ''}>${p.nombre}</option>`
+                ).join('');
+            provSelect.disabled = false;
+        } catch { continue; }
+
+        if (!selectedProv) continue;
+
+        // Recargar distritos
+        try {
+            const res2 = await fetch(`/ubigeo/distritos/${selectedProv}`);
+            const data2 = await res2.json();
+            distSelect.innerHTML = '<option value="">-- Distrito --</option>' +
+                data2.map(d =>
+                    `<option value="${d.id}" ${d.id == selectedDist ? 'selected' : ''}>${d.nombre}</option>`
+                ).join('');
+            distSelect.disabled = false;
+        } catch { continue; }
+    }
 });
 </script>
 @endpush

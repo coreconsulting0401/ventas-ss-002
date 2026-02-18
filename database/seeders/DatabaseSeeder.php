@@ -18,6 +18,13 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
+
+            // Ubigeo — orden obligatorio por claves foráneas
+            DepartamentoSeeder::class,
+            ProvinciaSeeder::class,
+            DistritoSeeder::class,
+
+            // Otros
             CategoriaSeeder::class,
             CreditoSeeder::class,
             IgvSeeder::class,

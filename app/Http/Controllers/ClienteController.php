@@ -11,6 +11,7 @@ use App\Models\Cliente;
 use App\Models\Credito;
 use App\Models\Categoria;
 use App\Models\Contacto;
+use App\Models\Departamento;
 use App\Models\Direccion;
 use Illuminate\Http\Request;
 
@@ -23,10 +24,9 @@ class ClienteController extends Controller
     {
         $query = Cliente::query();
 
-        // Búsqueda general
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('ruc', 'like', "%{$search}%")
                   ->orWhere('razon', 'like', "%{$search}%")
                   ->orWhere('direccion', 'like', "%{$search}%")
@@ -35,7 +35,6 @@ class ClienteController extends Controller
             });
         }
 
-        // Filtros específicos
         if ($request->filled('ruc')) {
             $query->where('ruc', 'like', "%{$request->ruc}%");
         }
@@ -49,14 +48,14 @@ class ClienteController extends Controller
         }
 
         if ($request->filled('credito_aprobado')) {
-            $query->whereHas('credito', function($q) use ($request) {
+            $query->whereHas('credito', function ($q) use ($request) {
                 $q->where('aprobacion', $request->credito_aprobado);
             });
         }
 
-        $clientes = $query->with(['credito', 'categoria', 'contactos', 'direcciones'])->paginate(15);
+        $clientes   = $query->with(['credito', 'categoria', 'contactos', 'direcciones'])->paginate(15);
         $categorias = Categoria::all();
-        $creditos = Credito::all();
+        $creditos   = Credito::all();
 
         return view('clientes.index', compact('clientes', 'categorias', 'creditos'));
     }
@@ -66,11 +65,12 @@ class ClienteController extends Controller
      */
     public function create()
     {
-        $categorias = Categoria::all();
-        $creditos = Credito::all();
-        $contactos = Contacto::all();
+        $categorias   = Categoria::all();
+        $creditos     = Credito::all();
+        $contactos    = Contacto::all();
+        $departamentos = Departamento::orderBy('nombre')->get(['id', 'nombre']);
 
-        return view('clientes.create', compact('categorias', 'creditos', 'contactos'));
+        return view('clientes.create', compact('categorias', 'creditos', 'contactos', 'departamentos'));
     }
 
     /**
@@ -78,38 +78,37 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar datos del cliente
         $validated = $request->validate([
-            'ruc' => 'required|string|size:11|unique:clientes,ruc',
-            'razon' => 'required|string|max:250',
-            'direccion' => 'required|string|max:200',
-            'telefono1' => 'required|string|max:15',
-            'telefono2' => 'nullable|string|max:15',
-            'credito_id' => 'nullable|exists:creditos,id',
+            'ruc'          => 'required|string|size:11|unique:clientes,ruc',
+            'razon'        => 'required|string|max:250',
+            'direccion'    => 'required|string|max:200',
+            'telefono1'    => 'required|string|max:15',
+            'telefono2'    => 'nullable|string|max:15',
+            'credito_id'   => 'nullable|exists:creditos,id',
             'categoria_id' => 'nullable|exists:categorias,id',
         ]);
 
-        // Obtener contactos e direcciones
-        $contactosIds = $request->input('contactos') ? explode(',', $request->input('contactos')) : [];
-        $direcciones = $request->input('direcciones', []);
+        $contactosIds = $request->input('contactos')
+            ? explode(',', $request->input('contactos'))
+            : [];
 
-        // Crear el cliente
+        $direcciones = $request->input('direcciones', []);
+        $distritos   = $request->input('distritos', []);   // arreglo paralelo a direcciones
+
         $cliente = Cliente::create($validated);
 
-        // Asignar contactos (tabla intermedia cliente_contacto)
         if (!empty($contactosIds)) {
             $cliente->contactos()->sync(array_filter($contactosIds));
         }
 
-        // Crear direcciones adicionales
-        if (!empty($direcciones)) {
-            foreach ($direcciones as $direccion) {
-                if (!empty(trim($direccion))) {
-                    Direccion::create([
-                        'direccion' => $direccion,
-                        'cliente_id' => $cliente->id
-                    ]);
-                }
+        // Crear direcciones adicionales con ubigeo
+        foreach ($direcciones as $idx => $dir) {
+            if (!empty(trim($dir))) {
+                Direccion::create([
+                    'direccion'   => trim($dir),
+                    'cliente_id'  => $cliente->id,
+                    'distrito_id' => !empty($distritos[$idx]) ? (int) $distritos[$idx] : null,
+                ]);
             }
         }
 
@@ -122,7 +121,14 @@ class ClienteController extends Controller
      */
     public function show(Cliente $cliente)
     {
-        $cliente->load(['credito', 'categoria', 'contactos', 'direcciones', 'proformas']);
+        $cliente->load([
+            'credito',
+            'categoria',
+            'contactos',
+            'proformas',
+            'direcciones.distrito.provincia.departamento',
+        ]);
+
         return view('clientes.show', compact('cliente'));
     }
 
@@ -131,12 +137,17 @@ class ClienteController extends Controller
      */
     public function edit(Cliente $cliente)
     {
-        $categorias = Categoria::all();
-        $creditos = Credito::all();
-        $contactos = Contacto::all();
-        $cliente->load('contactos', 'direcciones');
+        $categorias    = Categoria::all();
+        $creditos      = Credito::all();
+        $contactos     = Contacto::all();
+        $departamentos = Departamento::orderBy('nombre')->get(['id', 'nombre']);
 
-        return view('clientes.edit', compact('cliente', 'categorias', 'creditos', 'contactos'));
+        $cliente->load([
+            'contactos',
+            'direcciones.distrito.provincia.departamento',
+        ]);
+
+        return view('clientes.edit', compact('cliente', 'categorias', 'creditos', 'contactos', 'departamentos'));
     }
 
     /**
@@ -144,50 +155,51 @@ class ClienteController extends Controller
      */
     public function update(Request $request, Cliente $cliente)
     {
-        // Validar datos del cliente
         $validated = $request->validate([
-            'ruc' => 'required|string|size:11|unique:clientes,ruc,' . $cliente->id,
-            'razon' => 'required|string|max:250',
-            'direccion' => 'required|string|max:200',
-            'telefono1' => 'required|string|max:15',
-            'telefono2' => 'nullable|string|max:15',
-            'credito_id' => 'nullable|exists:creditos,id',
-            'categoria_id' => 'nullable|exists:categorias,id',
-            'direcciones' => 'nullable|array',
-            'direcciones.*' => 'nullable|string|max:250',
+            'ruc'            => 'required|string|size:11|unique:clientes,ruc,' . $cliente->id,
+            'razon'          => 'required|string|max:250',
+            'direccion'      => 'required|string|max:200',
+            'telefono1'      => 'required|string|max:15',
+            'telefono2'      => 'nullable|string|max:15',
+            'credito_id'     => 'nullable|exists:creditos,id',
+            'categoria_id'   => 'nullable|exists:categorias,id',
+            'direcciones'    => 'nullable|array',
+            'direcciones.*'  => 'nullable|string|max:250',
+            'distritos'      => 'nullable|array',
+            'distritos.*'    => 'nullable|exists:distritos,id',
         ]);
 
-        // Obtener contactos y direcciones
-        $contactosIds = $request->input('contactos') ? explode(',', $request->input('contactos')) : [];
-        $direcciones = $request->input('direcciones', []);
+        $contactosIds = $request->input('contactos')
+            ? explode(',', $request->input('contactos'))
+            : [];
 
-        // Actualizar el cliente
+        $direcciones = $request->input('direcciones', []);
+        $distritos   = $request->input('distritos', []);
+
         $cliente->update($validated);
 
-        // Sincronizar contactos
         if (!empty($contactosIds)) {
             $cliente->contactos()->sync(array_filter($contactosIds));
         } else {
             $cliente->contactos()->detach();
         }
 
-        // Manejar direcciones adicionales
+        // Reemplazar direcciones (borrar las antiguas y crear las nuevas)
         $cliente->direcciones()->delete();
-        if (!empty($direcciones)) {
-            foreach ($direcciones as $direccion) {
-                if (!empty(trim($direccion))) {
-                    Direccion::create([
-                        'direccion' => trim($direccion),
-                        'cliente_id' => $cliente->id
-                    ]);
-                }
+
+        foreach ($direcciones as $idx => $dir) {
+            if (!empty(trim($dir))) {
+                Direccion::create([
+                    'direccion'   => trim($dir),
+                    'cliente_id'  => $cliente->id,
+                    'distrito_id' => !empty($distritos[$idx]) ? (int) $distritos[$idx] : null,
+                ]);
             }
         }
 
         return redirect()->route('clientes.index')
             ->with('success', 'Cliente actualizado exitosamente');
     }
-
 
     /**
      * Remove the specified resource from storage
@@ -213,21 +225,19 @@ class ClienteController extends Controller
 
         if ($cliente) {
             return response()->json([
-                'existe' => true,
-                'cliente' => [
-                    'id' => $cliente->id,
-                    'ruc' => $cliente->ruc,
-                    'razon' => $cliente->razon,
-                    'direccion' => $cliente->direccion,
-                    'telefono1' => $cliente->telefono1,
-                    'telefono2' => $cliente->telefono2,
+                'existe'   => true,
+                'cliente'  => [
+                    'id'       => $cliente->id,
+                    'ruc'      => $cliente->ruc,
+                    'razon'    => $cliente->razon,
+                    'direccion'=> $cliente->direccion,
+                    'telefono1'=> $cliente->telefono1,
+                    'telefono2'=> $cliente->telefono2,
                 ],
-                'url_edit' => route('clientes.edit', $cliente->id)
+                'url_edit' => route('clientes.edit', $cliente->id),
             ]);
         }
 
-        return response()->json([
-            'existe' => false
-        ]);
+        return response()->json(['existe' => false]);
     }
 }

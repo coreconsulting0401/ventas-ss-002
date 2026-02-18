@@ -198,24 +198,53 @@
 
         <!-- Sección de Direcciones Adicionales -->
         <div class="card mt-3">
-            <div class="card-header">
+            <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
-                    <i class="bi bi-geo-alt"></i> Direcciones Adicionales ({{ $cliente->direcciones->count() }})
+                    <i class="bi bi-geo-alt"></i> Agencias / Direcciones Adicionales ({{ $cliente->direcciones->count() }})
                 </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 @if($cliente->direcciones->count() > 0)
-                    <div class="list-group">
+                    <div class="list-group list-group-flush">
                         @foreach($cliente->direcciones as $direccion)
                         <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="ms-2 me-auto">
-                                    <div class="fw-bold">
-                                        <i class="bi bi-geo-alt-fill"></i> Dirección {{ $loop->iteration }}
-                                    </div>
-                                    {{ $direccion->direccion }}
+                            <div class="ms-1 me-auto">
+
+                                {{-- Número de agencia --}}
+                                <div class="fw-bold mb-1">
+                                    <span class="badge bg-info text-white me-1">Agencia {{ $loop->iteration }}</span>
                                 </div>
-                                <span class="badge bg-primary rounded-pill">{{ $direccion->id }}</span>
+
+                                {{-- Dirección textual --}}
+                                <div class="mb-2">
+                                    <i class="bi bi-geo-alt-fill text-info"></i>
+                                    <strong>Dirección:</strong> {{ $direccion->direccion }}
+                                </div>
+
+                                {{-- Ubigeo --}}
+                                @if($direccion->distrito)
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        <span class="badge rounded-pill bg-primary">
+                                            <i class="bi bi-map"></i>
+                                            {{ $direccion->distrito->provincia->departamento->nombre ?? '—' }}
+                                        </span>
+                                        <i class="bi bi-chevron-right text-muted small"></i>
+                                        <span class="badge rounded-pill bg-secondary">
+                                            <i class="bi bi-building"></i>
+                                            {{ $direccion->distrito->provincia->nombre ?? '—' }}
+                                        </span>
+                                        <i class="bi bi-chevron-right text-muted small"></i>
+                                        <span class="badge rounded-pill bg-success">
+                                            <i class="bi bi-pin-map"></i>
+                                            {{ $direccion->distrito->nombre }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="badge bg-light text-muted border">
+                                        <i class="bi bi-geo-alt"></i> Sin ubigeo registrado
+                                    </span>
+                                @endif
+
                             </div>
                         </div>
                         @endforeach
@@ -223,7 +252,7 @@
                 @else
                     <div class="text-center py-4">
                         <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
-                        <p class="mt-2 text-muted">Este cliente no tiene direcciones adicionales</p>
+                        <p class="mt-2 text-muted">Este cliente no tiene agencias adicionales registradas</p>
                     </div>
                 @endif
             </div>

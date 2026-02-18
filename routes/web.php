@@ -23,6 +23,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProformaEstadisticasController;
 use App\Http\Controllers\ApiExternaController;
+use App\Http\Controllers\UbigeoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,7 +31,6 @@ use App\Http\Controllers\ApiExternaController;
 |--------------------------------------------------------------------------
 */
 
-// Ruta principal
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
@@ -48,80 +48,68 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // ── Contactos ──────────────────────────────────────────────────────────────
-    // IMPORTANTE: las rutas con segmentos fijos deben ir ANTES del resource
+    // ── Ubigeo (selects encadenados) ──────────────────────────────────────────
+    Route::prefix('ubigeo')->name('ubigeo.')->group(function () {
+        Route::get('provincias/{departamento_id}', [UbigeoController::class, 'provincias'])
+             ->name('provincias');
+        Route::get('distritos/{provincia_id}',     [UbigeoController::class, 'distritos'])
+             ->name('distritos');
+    });
+
+    // ── Contactos ─────────────────────────────────────────────────────────────
+    // IMPORTANTE: rutas con segmentos fijos ANTES del resource
     Route::get('contactos/buscar-dni/{dni}', [ContactoController::class, 'buscarPorDni'])
          ->name('contactos.buscar-dni');
     Route::resource('contactos', ContactoController::class);
 
-    // ── Clientes ───────────────────────────────────────────────────────────────
+    // ── Clientes ──────────────────────────────────────────────────────────────
     Route::get('clientes/verificar-ruc/{ruc}', [ClienteController::class, 'verificarRuc'])
          ->name('clientes.verificar-ruc');
 
     Route::prefix('api-externa')->group(function () {
-
-
-        Route::get('consultar-ruc/{ruc}',
-            [\App\Http\Controllers\ApiExternaController::class, 'consultarRuc'])
-            ->name('api.consultar-ruc');
-
-        Route::get('consultar-dni/{dni}',
-            [\App\Http\Controllers\ApiExternaController::class, 'consultarDni'])
-            ->name('api.consultar-dni');
-
-
+        Route::get('consultar-ruc/{ruc}', [ApiExternaController::class, 'consultarRuc'])
+             ->name('api.consultar-ruc');
+        Route::get('consultar-dni/{dni}', [ApiExternaController::class, 'consultarDni'])
+             ->name('api.consultar-dni');
     });
 
     Route::resource('clientes', ClienteController::class);
 
-    // ── Créditos ───────────────────────────────────────────────────────────────
+    // ── Créditos ──────────────────────────────────────────────────────────────
     Route::resource('creditos', CreditoController::class);
 
-    // ── Categorías ─────────────────────────────────────────────────────────────
+    // ── Categorías ────────────────────────────────────────────────────────────
     Route::resource('categorias', CategoriaController::class);
 
-    // ── Direcciones ────────────────────────────────────────────────────────────
+    // ── Direcciones ───────────────────────────────────────────────────────────
     Route::resource('direcciones', DireccionController::class);
 
-    // ── Productos ──────────────────────────────────────────────────────────────
+    // ── Productos ─────────────────────────────────────────────────────────────
     Route::resource('productos', ProductoController::class);
 
-    // ── Descuentos ─────────────────────────────────────────────────────────────
+    // ── Descuentos ────────────────────────────────────────────────────────────
     Route::resource('descuentos', DescuentoController::class);
 
-    // ── Proformas ──────────────────────────────────────────────────────────────
-    // IMPORTANTE: las rutas con segmentos fijos deben ir ANTES del resource
-    // para que Laravel no confunda "pdf" o "pdf/preview" con el {proforma} id.
-    Route::get('proformas/{proforma}/pdf',
-        [ProformaPDFController::class, 'generarPDF']
-    )->name('proformas.pdf');
-
-    Route::get('proformas/{proforma}/pdf/preview',
-        [ProformaPDFController::class, 'previsualizarPDF']
-    )->name('proformas.pdf.preview');
-
-
-    // Estadísticas (debe ir ANTES del resource)
-    Route::get('proformas/estadisticas',
-        [\App\Http\Controllers\ProformaEstadisticasController::class, '__invoke'])
-        ->name('proformas.estadisticas');
-
+    // ── Proformas ─────────────────────────────────────────────────────────────
+    Route::get('proformas/{proforma}/pdf',         [ProformaPDFController::class, 'generarPDF'])->name('proformas.pdf');
+    Route::get('proformas/{proforma}/pdf/preview', [ProformaPDFController::class, 'previsualizarPDF'])->name('proformas.pdf.preview');
+    Route::get('proformas/estadisticas',           [\App\Http\Controllers\ProformaEstadisticasController::class, '__invoke'])->name('proformas.estadisticas');
     Route::resource('proformas', ProformaController::class);
 
-    // ── Transacciones ──────────────────────────────────────────────────────────
+    // ── Transacciones ─────────────────────────────────────────────────────────
     Route::resource('transacciones', TransaccionController::class)
          ->parameters(['transacciones' => 'transaccion']);
 
-    // ── Temperaturas ───────────────────────────────────────────────────────────
+    // ── Temperaturas ──────────────────────────────────────────────────────────
     Route::resource('temperaturas', TemperaturaController::class);
 
-    // ── Estados ────────────────────────────────────────────────────────────────
+    // ── Estados ───────────────────────────────────────────────────────────────
     Route::resource('estados', EstadoController::class);
 
-    // ── Virtuals ───────────────────────────────────────────────────────────────
+    // ── Virtuals ──────────────────────────────────────────────────────────────
     Route::resource('virtuals', VirtualController::class);
 
-    // ── Proveedores ────────────────────────────────────────────────────────────
+    // ── Proveedores ───────────────────────────────────────────────────────────
     Route::resource('proveedores', ProveedorController::class);
 });
 
