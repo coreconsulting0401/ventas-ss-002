@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * ARCHIVO: routes/web.php
+ * Todas las rutas del sistema de gestión de proformas
+ */
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\CreditoController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\DireccionController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\DescuentoController;
+use App\Http\Controllers\ProformaController;
+use App\Http\Controllers\ProformaPDFController;
+use App\Http\Controllers\TransaccionController;
+use App\Http\Controllers\TemperaturaController;
+use App\Http\Controllers\EstadoController;
+use App\Http\Controllers\VirtualController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProformaEstadisticasController;
+use App\Http\Controllers\ApiExternaController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// Ruta principal
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+// ─── Rutas protegidas por autenticación ───────────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    // Perfil
+    Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // ── Contactos ──────────────────────────────────────────────────────────────
+    // IMPORTANTE: las rutas con segmentos fijos deben ir ANTES del resource
+    Route::get('contactos/buscar-dni/{dni}', [ContactoController::class, 'buscarPorDni'])
+         ->name('contactos.buscar-dni');
+    Route::resource('contactos', ContactoController::class);
+
+    // ── Clientes ───────────────────────────────────────────────────────────────
+    Route::get('clientes/verificar-ruc/{ruc}', [ClienteController::class, 'verificarRuc'])
+         ->name('clientes.verificar-ruc');
+
+    Route::prefix('api-externa')->group(function () {
+
+
+        Route::get('consultar-ruc/{ruc}',
+            [\App\Http\Controllers\ApiExternaController::class, 'consultarRuc'])
+            ->name('api.consultar-ruc');
+
+        Route::get('consultar-dni/{dni}',
+            [\App\Http\Controllers\ApiExternaController::class, 'consultarDni'])
+            ->name('api.consultar-dni');
+
+
+    });
+
+    Route::resource('clientes', ClienteController::class);
+
+    // ── Créditos ───────────────────────────────────────────────────────────────
+    Route::resource('creditos', CreditoController::class);
+
+    // ── Categorías ─────────────────────────────────────────────────────────────
+    Route::resource('categorias', CategoriaController::class);
+
+    // ── Direcciones ────────────────────────────────────────────────────────────
+    Route::resource('direcciones', DireccionController::class);
+
+    // ── Productos ──────────────────────────────────────────────────────────────
+    Route::resource('productos', ProductoController::class);
+
+    // ── Descuentos ─────────────────────────────────────────────────────────────
+    Route::resource('descuentos', DescuentoController::class);
+
+    // ── Proformas ──────────────────────────────────────────────────────────────
+    // IMPORTANTE: las rutas con segmentos fijos deben ir ANTES del resource
+    // para que Laravel no confunda "pdf" o "pdf/preview" con el {proforma} id.
+    Route::get('proformas/{proforma}/pdf',
+        [ProformaPDFController::class, 'generarPDF']
+    )->name('proformas.pdf');
+
+    Route::get('proformas/{proforma}/pdf/preview',
+        [ProformaPDFController::class, 'previsualizarPDF']
+    )->name('proformas.pdf.preview');
+
+
+    // Estadísticas (debe ir ANTES del resource)
+    Route::get('proformas/estadisticas',
+        [\App\Http\Controllers\ProformaEstadisticasController::class, '__invoke'])
+        ->name('proformas.estadisticas');
+
+    Route::resource('proformas', ProformaController::class);
+
+    // ── Transacciones ──────────────────────────────────────────────────────────
+    Route::resource('transacciones', TransaccionController::class)
+         ->parameters(['transacciones' => 'transaccion']);
+
+    // ── Temperaturas ───────────────────────────────────────────────────────────
+    Route::resource('temperaturas', TemperaturaController::class);
+
+    // ── Estados ────────────────────────────────────────────────────────────────
+    Route::resource('estados', EstadoController::class);
+
+    // ── Virtuals ───────────────────────────────────────────────────────────────
+    Route::resource('virtuals', VirtualController::class);
+
+    // ── Proveedores ────────────────────────────────────────────────────────────
+    Route::resource('proveedores', ProveedorController::class);
+});
+
+// Rutas de autenticación (Laravel Breeze)
+require __DIR__.'/auth.php';
