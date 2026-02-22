@@ -603,6 +603,29 @@
                 </li>
                 -->
 
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-gear"></i>
+                        <span>Administración</span>
+                    </a>
+                </li>
+
+                <li class="nav-item ms-3">
+                    <a href="{{ route('users.index') }}"
+                    class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+
+                <li class="nav-item ms-3">
+                    <a href="{{ route('roles.index') }}"
+                    class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                        <i class="bi bi-shield-fill-check"></i>
+                        <span>Roles</span>
+                    </a>
+                </li>
+
                 @endrole
             </ul>
         </div>

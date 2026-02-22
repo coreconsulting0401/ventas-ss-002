@@ -1,8 +1,10 @@
 <?php
 
 /**
- * SEEDER: RolePermissionSeeder.php
+ * SEEDER: RolePermissionSeeder.php (ACTUALIZADO)
  * Ubicación: database/seeders/RolePermissionSeeder.php
+ *
+ * REEMPLAZAR EL ARCHIVO COMPLETO con este contenido
  */
 
 namespace Database\Seeders;
@@ -15,15 +17,12 @@ use Illuminate\Support\Facades\Hash;
 
 class RolePermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Reset cached roles and permissions
+        // Limpiar caché de permisos
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Crear permisos para cada módulo
+        // Módulos del sistema
         $modules = [
             'contactos',
             'clientes',
@@ -38,10 +37,13 @@ class RolePermissionSeeder extends Seeder
             'estados',
             'virtuals',
             'proveedores',
+            'users',      // ← NUEVO
+            'roles',      // ← NUEVO
         ];
 
         $actions = ['view', 'create', 'edit', 'delete'];
 
+        // Crear permisos
         foreach ($modules as $module) {
             foreach ($actions as $action) {
                 Permission::create(['name' => "$action $module"]);
@@ -54,10 +56,10 @@ class RolePermissionSeeder extends Seeder
         $almacenRole = Role::create(['name' => 'Almacén']);
         $visualizadorRole = Role::create(['name' => 'Visualizador']);
 
-        // Asignar todos los permisos al Administrador
+        // Administrador: TODOS los permisos
         $adminRole->givePermissionTo(Permission::all());
 
-        // Permisos para Vendedor (puede gestionar clientes, contactos y proformas)
+        // Vendedor: gestión de clientes, contactos y proformas
         $vendedorPermissions = [
             'view contactos', 'create contactos', 'edit contactos',
             'view clientes', 'create clientes', 'edit clientes',
@@ -68,7 +70,7 @@ class RolePermissionSeeder extends Seeder
         ];
         $vendedorRole->givePermissionTo($vendedorPermissions);
 
-        // Permisos para Almacén (puede gestionar productos, virtuals y proveedores)
+        // Almacén: gestión de productos, virtuals y proveedores
         $almacenPermissions = [
             'view productos', 'create productos', 'edit productos', 'delete productos',
             'view virtuals', 'create virtuals', 'edit virtuals', 'delete virtuals',
@@ -77,11 +79,11 @@ class RolePermissionSeeder extends Seeder
         ];
         $almacenRole->givePermissionTo($almacenPermissions);
 
-        // Permisos para Visualizador (solo ver)
+        // Visualizador: solo ver todo
         $visualizadorPermissions = Permission::where('name', 'like', 'view%')->pluck('name');
         $visualizadorRole->givePermissionTo($visualizadorPermissions);
 
-        // Crear usuario administrador por defecto
+        // Crear usuarios de ejemplo
         $admin = User::create([
             'name' => 'Administrador Sistema',
             'dni' => '12345678',
@@ -91,7 +93,6 @@ class RolePermissionSeeder extends Seeder
         ]);
         $admin->assignRole('Administrador');
 
-        // Crear usuario vendedor por defecto
         $vendedor = User::create([
             'name' => 'Juan Vendedor',
             'dni' => '87654321',
@@ -101,7 +102,6 @@ class RolePermissionSeeder extends Seeder
         ]);
         $vendedor->assignRole('Vendedor');
 
-        // Crear usuario almacén por defecto
         $almacenero = User::create([
             'name' => 'Pedro Almacén',
             'dni' => '11223344',
@@ -111,9 +111,9 @@ class RolePermissionSeeder extends Seeder
         ]);
         $almacenero->assignRole('Almacén');
 
-        $this->command->info('Roles y permisos creados exitosamente!');
-        $this->command->info('Usuario Admin: admin@proformas.com / password');
-        $this->command->info('Usuario Vendedor: vendedor@proformas.com / password');
-        $this->command->info('Usuario Almacén: almacen@proformas.com / password');
+        $this->command->info('✅ Roles y permisos creados exitosamente!');
+        $this->command->info('📧 Usuario Admin: admin@proformas.com / password');
+        $this->command->info('📧 Usuario Vendedor: vendedor@proformas.com / password');
+        $this->command->info('📧 Usuario Almacén: almacen@proformas.com / password');
     }
 }

@@ -12,7 +12,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
-
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $dni
+ * @property string|null $codigo
+ */
 
 class User extends Authenticatable
 {
@@ -77,5 +83,15 @@ class User extends Authenticatable
     public function proformas(): HasMany
     {
         return $this->hasMany(Proforma::class);
+    }
+
+     /**
+     * Get the value of the "id" attribute.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 }

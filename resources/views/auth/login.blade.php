@@ -104,7 +104,12 @@
 
                         <!-- Lado derecho - Formulario -->
                         <div class="col-md-7 login-form">
-                            <h3 class="mb-4">
+
+                            <!-- centrar el logo -->
+                            <div class="text-center mb-4">
+                                <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                            </div>
+                            <h3 class="mb-4 text-center">
                                 <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
                             </h3>
 
@@ -116,6 +121,20 @@
                                 </div>
                             @endif
 
+                            <!-- Información de usuarios de prueba
+
+                            @if ($errors->any())
+                                <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+                                    <div class="mb-2">
+                                        <i class="bi bi-x-circle-fill" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h5 class="alert-heading">USUARIO O CONTRASEÑA INCORRECTA</h5>
+                                    <p class="mb-0">Por favor, verifica tus credenciales e intenta de nuevo.</p>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            @endif
+                            -->
+
                             <!-- Información de usuarios de prueba -->
                             <div class="info-badge">
                                 <h6><i class="bi bi-info-circle"></i> Usuarios de Prueba</h6>
@@ -123,6 +142,8 @@
                                 <p><strong>Vendedor:</strong> vendedor@proformas.com / password</p>
                                 <p><strong>Almacén:</strong> almacen@proformas.com / password</p>
                             </div>
+
+
 
                             <form method="POST" action="{{ route('login') }}">
                                 @csrf
@@ -204,7 +225,36 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-body p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-x-circle text-danger" style="font-size: 5rem; opacity: 0.8;"></i>
+                    </div>
+                    <h4 class="fw-bold text-secondary mb-4">USUARIO O CONTRASEÑA INCORRECTA</h4>
+                    <p class="mt-4 text-muted small">Por favor, verifica tus credenciales e intenta de nuevo.</p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">OK</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Verificamos si Laravel ha enviado errores de validación
+            @if ($errors->any())
+                var myModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                myModal.show();
+            @endif
+        });
+    </script>
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

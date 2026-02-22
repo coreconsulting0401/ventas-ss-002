@@ -111,6 +111,21 @@ Route::middleware(['auth'])->group(function () {
 
     // ── Proveedores ───────────────────────────────────────────────────────────
     Route::resource('proveedores', ProveedorController::class);
+
+    // ── Gestión de Usuarios ──────────────────────────────────────────────
+    Route::middleware(['role:Administrador'])->group(function () {
+        Route::resource('users', \App\Http\Controllers\UserController::class);
+        Route::resource('roles', \App\Http\Controllers\RoleController::class);
+    });
+
+
+
+    // Múltiples roles
+    //Route::middleware(['role:Administrador|Vendedor'])->group(function () {
+        // ...
+    //});
+
+
 });
 
 // Rutas de autenticación (Laravel Breeze)
