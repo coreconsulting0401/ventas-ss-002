@@ -62,18 +62,21 @@
                             @enderror
                         </div>
 
-                        {{-- Código (opcional) --}}
+                        {{-- Código (auto-generado) --}}
                         <div class="col-md-6 mb-3">
                             <label for="codigo" class="form-label">
-                                <i class="bi bi-upc-scan"></i> Código
+                                <i class="bi bi-upc-scan"></i> Código <span class="text-muted">(Auto-generado)</span>
                             </label>
                             <input type="text"
                                    class="form-control @error('codigo') is-invalid @enderror"
                                    id="codigo"
                                    name="codigo"
                                    value="{{ old('codigo') }}"
-                                   placeholder="Ej: USR-001">
-                            <small class="text-muted">Se genera automáticamente si se deja vacío</small>
+                                   readonly
+                                   style="background-color: #f8f9fa;">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i> Se genera al seleccionar un rol
+                            </small>
                             @error('codigo')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -153,7 +156,7 @@
                 <div class="card-body">
                     <p class="text-muted small mb-3">
                         <i class="bi bi-info-circle"></i>
-                        Seleccione al menos un rol para el usuario
+                        Seleccione al menos un rol (el código se generará automáticamente)
                     </p>
 
                     @error('roles')
@@ -167,11 +170,13 @@
                         @foreach($roles as $role)
                             <label class="list-group-item">
                                 <div class="d-flex align-items-start">
-                                    <input class="form-check-input me-2 mt-1 flex-shrink-0"
+                                    <input class="form-check-input me-2 mt-1 flex-shrink-0 role-checkbox"
                                            type="checkbox"
                                            name="roles[]"
                                            value="{{ $role->name }}"
                                            id="role-{{ $role->id }}"
+                                           data-role-name="{{ $role->name }}"
+                                           onchange="generarCodigo()"
                                            {{ in_array($role->name, old('roles', [])) ? 'checked' : '' }}>
                                     <div class="flex-grow-1">
                                         <strong class="d-block">{{ $role->name }}</strong>
@@ -201,11 +206,41 @@
     </div>
 </form>
 
+{{-- Datos para JavaScript --}}
+<div id="js-data" 
+     data-next-user-id="{{ \App\Models\User::max('id') + 1 }}"
+     style="display:none;">
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
-// Toggle mostrar/ocultar contraseña
+const nextUserId = document.getElementById('js-data').dataset.nextUserId;
+
+/**
+ * Generar código: [3 letras del rol]-[ID]
+ * Ejemplo: VEN-002, ADM-003
+ */
+function generarCodigo() {
+    const rolesChecked = document.querySelectorAll('.role-checkbox:checked');
+    const codigoInput = document.getElementById('codigo');
+    
+    if (rolesChecked.length === 0) {
+        codigoInput.value = '';
+        return;
+    }
+    
+    const primerRol = rolesChecked[0].dataset.roleName;
+    const prefijo = primerRol.substring(0, 3).toUpperCase();
+    const idFormateado = String(nextUserId).padStart(3, '0');
+    const codigo = `${prefijo}-${idFormateado}`;
+    
+    codigoInput.value = codigo;
+    codigoInput.classList.add('border-success');
+    setTimeout(() => codigoInput.classList.remove('border-success'), 1000);
+}
+
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(inputId + '-icon');
@@ -221,12 +256,10 @@ function togglePassword(inputId) {
     }
 }
 
-// Solo números en DNI
 document.getElementById('dni').addEventListener('input', function() {
     this.value = this.value.replace(/[^0-9]/g, '');
 });
 
-// Validación antes de enviar
 document.getElementById('formUser').addEventListener('submit', function(e) {
     const rolesChecked = document.querySelectorAll('input[name="roles[]"]:checked');
 
@@ -244,6 +277,26 @@ document.getElementById('formUser').addEventListener('submit', function(e) {
         alert('Las contraseñas no coinciden');
         return false;
     }
+    
+    const codigo = document.getElementById('codigo').value;
+    if (!codigo) {
+        e.preventDefault();
+        alert('No se ha generado el código. Seleccione un rol.');
+        return false;
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const rolesChecked = document.querySelectorAll('.role-checkbox:checked');
+    if (rolesChecked.length > 0) generarCodigo();
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+#codigo { transition: border-color 0.3s ease; }
+#codigo.border-success { border-width: 2px !important; }
+#codigo:read-only { cursor: not-allowed; }
+</style>
 @endpush

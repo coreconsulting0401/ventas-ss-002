@@ -110,7 +110,9 @@ class ProformaController extends Controller
 
     public function create()
     {
-        $clientes      = Cliente::all();
+        // NO cargar todos los clientes (ahora es dinámico)
+        // $clientes = Cliente::all(); // <-- Eliminar esta línea
+
         $productos     = Producto::where('stock', '>', 0)->get();
         $virtuals      = Virtual::where('stock', '>', 0)->get();
         $transacciones = Transaccion::all();
@@ -118,7 +120,7 @@ class ProformaController extends Controller
         $estados       = Estado::all();
 
         return view('proformas.create', compact(
-            'clientes',
+            // 'clientes', // <-- Eliminar
             'productos',
             'virtuals',
             'transacciones',
@@ -126,6 +128,7 @@ class ProformaController extends Controller
             'estados'
         ));
     }
+
 
     public function store(ProformaRequest $request)
     {
@@ -181,9 +184,12 @@ class ProformaController extends Controller
     {
         $proforma->load([
             'productos' => fn($q) => $q->with('descuento'),
+            'cliente' // <-- Asegurar que cargue el cliente
         ]);
 
-        $clientes      = Cliente::all();
+        // NO cargar todos los clientes (ahora es dinámico)
+        // $clientes = Cliente::all(); // <-- Eliminar esta línea
+
         $productos     = Producto::where('stock', '>', 0)->get();
         $virtuals      = Virtual::where('stock', '>', 0)->get();
         $transacciones = Transaccion::all();
@@ -191,8 +197,8 @@ class ProformaController extends Controller
         $estados       = Estado::all();
 
         return view('proformas.edit', compact(
+            // 'clientes', // <-- Eliminar
             'proforma',
-            'clientes',
             'productos',
             'virtuals',
             'transacciones',

@@ -24,6 +24,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProformaEstadisticasController;
 use App\Http\Controllers\ApiExternaController;
 use App\Http\Controllers\UbigeoController;
+use App\Http\Controllers\ClienteBusquedaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,7 +61,7 @@ Route::middleware(['auth'])->group(function () {
     // IMPORTANTE: rutas con segmentos fijos ANTES del resource
     Route::get('contactos/buscar-dni/{dni}', [ContactoController::class, 'buscarPorDni'])
          ->name('contactos.buscar-dni');
-    Route::resource('contactos', ContactoController::class);
+
 
     // ── Clientes ──────────────────────────────────────────────────────────────
     Route::get('clientes/verificar-ruc/{ruc}', [ClienteController::class, 'verificarRuc'])
@@ -73,7 +74,19 @@ Route::middleware(['auth'])->group(function () {
              ->name('api.consultar-dni');
     });
 
-    Route::resource('clientes', ClienteController::class);
+    // ── Proformas ─────────────────────────────────────────────────────────────
+    Route::get('proformas/{proforma}/pdf',         [ProformaPDFController::class, 'generarPDF'])->name('proformas.pdf');
+    Route::get('proformas/{proforma}/pdf/preview', [ProformaPDFController::class, 'previsualizarPDF'])->name('proformas.pdf.preview');
+    Route::get('proformas/estadisticas',           [\App\Http\Controllers\ProformaEstadisticasController::class, '__invoke'])->name('proformas.estadisticas');
+
+    // ── API Interna para Selects Dinámicos ─────────────────────────────────
+    Route::prefix('api')->group(function () {
+        Route::get('clientes/buscar', [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
+        Route::get('clientes/{id}', [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
+    });
+
+    // ── Contactos ─────────────────────────────────────────────────────────────
+    Route::resource('contactos', ContactoController::class);
 
     // ── Créditos ──────────────────────────────────────────────────────────────
     Route::resource('creditos', CreditoController::class);
@@ -90,12 +103,10 @@ Route::middleware(['auth'])->group(function () {
     // ── Descuentos ────────────────────────────────────────────────────────────
     Route::resource('descuentos', DescuentoController::class);
 
-    // ── Proformas ─────────────────────────────────────────────────────────────
-    Route::get('proformas/{proforma}/pdf',         [ProformaPDFController::class, 'generarPDF'])->name('proformas.pdf');
-    Route::get('proformas/{proforma}/pdf/preview', [ProformaPDFController::class, 'previsualizarPDF'])->name('proformas.pdf.preview');
-    Route::get('proformas/estadisticas',           [\App\Http\Controllers\ProformaEstadisticasController::class, '__invoke'])->name('proformas.estadisticas');
+
     Route::resource('proformas', ProformaController::class);
 
+    Route::resource('clientes', ClienteController::class);
     // ── Transacciones ─────────────────────────────────────────────────────────
     Route::resource('transacciones', TransaccionController::class)
          ->parameters(['transacciones' => 'transaccion']);
