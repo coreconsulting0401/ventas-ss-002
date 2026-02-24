@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('virtuals', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 150);
-            $table->string('precio_compra', 12)->unique();
-            $table->decimal('precio_venta', 10, 3);
+            $table->decimal('precio_compra', 10, 2);
+            $table->decimal('precio_venta', 10, 2);
             $table->string('marca', 50);
             $table->integer('stock');
             $table->timestamps();

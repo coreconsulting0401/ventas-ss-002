@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('descuentos', function (Blueprint $table) {
             $table->id();
-            $table->float('porcentaje', 5, 2); // 0.00 a 100.00
+            $table->decimal('porcentaje', 5, 2); // 0.00 a 100.00
             $table->timestamps();
         });
     }

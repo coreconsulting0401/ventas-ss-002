@@ -22,17 +22,17 @@ class ProductoRequest extends FormRequest
         $productoId = $this->route('producto');
 
         return [
-            'codigo_e' => [
-                'required',
+             'codigo_e' => [
+                'nullable',
                 'string',
-                'max:12',
-                Rule::unique('productos', 'codigo_e')->ignore($productoId),
+                'max:17',
+                Rule::unique('productos', 'codigo_e')->ignore($productoId)->whereNotNull('codigo_e'),
             ],
             'codigo_p' => [
-                'required',
+                'nullable',
                 'string',
-                'max:12',
-                Rule::unique('productos', 'codigo_p')->ignore($productoId),
+                'max:17',
+                Rule::unique('productos', 'codigo_p')->ignore($productoId)->whereNotNull('codigo_p'),
             ],
             'nombre' => 'required|string|max:150',
             'marca' => 'required|string|max:50',
@@ -46,12 +46,22 @@ class ProductoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'codigo_e.required' => 'El código E es obligatorio',
-            'codigo_e.unique' => 'Este código E ya está registrado',
-            'codigo_p.required' => 'El código P es obligatorio',
-            'codigo_p.unique' => 'Este código P ya está registrado',
-            'precio_lista.regex' => 'El precio debe tener máximo 7 enteros y 3 decimales',
-            'stock.min' => 'El stock no puede ser negativo',
+            'codigo_e.unique'      => 'Este código Externo ya está registrado en otro producto',
+            'codigo_p.unique'      => 'Este código de Producto (inerno) ya está registrado en otro producto',
+            'precio_lista.regex'   => 'El precio debe tener máximo 7 enteros y 3 decimales',
+            'stock.min'            => 'El stock no puede ser negativo',
         ];
+    }
+
+    /**
+     * Convierte strings vacíos de código en null antes de validar
+     * para que la regla nullable funcione correctamente.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'codigo_e' => $this->codigo_e ?: null,
+            'codigo_p' => $this->codigo_p ?: null,
+        ]);
     }
 }

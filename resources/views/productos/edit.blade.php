@@ -26,7 +26,8 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="codigo_e" class="form-label">
-                            <i class="bi bi-upc"></i> Código E (Externo) <span class="text-danger">*</span>
+                            <i class="bi bi-upc"></i> Código E (Externo)
+                            <span class="text-muted small">(opcional)</span>
                         </label>
                         <input type="text"
                                class="form-control @error('codigo_e') is-invalid @enderror"
@@ -34,19 +35,19 @@
                                name="codigo_e"
                                value="{{ old('codigo_e', $producto->codigo_e) }}"
                                placeholder="Código externo"
-                               maxlength="12"
-                               required>
+                               maxlength="17">
                         @error('codigo_e')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <small class="text-muted">Máximo 12 caracteres</small>
+                        <small class="text-muted">Máximo 17 caracteres · único si se ingresa</small>
                     </div>
                 </div>
 
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="codigo_p" class="form-label">
-                            <i class="bi bi-upc-scan"></i> Código P (Interno) <span class="text-danger">*</span>
+                            <i class="bi bi-upc-scan"></i> Código P (Interno)
+                            <span class="text-muted small">(opcional)</span>
                         </label>
                         <input type="text"
                                class="form-control @error('codigo_p') is-invalid @enderror"
@@ -54,12 +55,11 @@
                                name="codigo_p"
                                value="{{ old('codigo_p', $producto->codigo_p) }}"
                                placeholder="Código interno"
-                               maxlength="12"
-                               required>
+                               maxlength="17">
                         @error('codigo_p')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <small class="text-muted">Máximo 12 caracteres</small>
+                        <small class="text-muted">Máximo 17 caracteres · único si se ingresa</small>
                     </div>
                 </div>
 

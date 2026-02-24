@@ -17,8 +17,8 @@ class Producto extends Model
     use HasFactory;
 
     protected $fillable = [
-        'codigo_e',
-        'codigo_p',
+        'codigo_e',  //unico, nullable
+        'codigo_p',  //unico, nullable
         'nombre',
         'marca',
         'ubicacion',
@@ -29,6 +29,9 @@ class Producto extends Model
 
     protected $casts = [
         'precio_lista' => 'decimal:3',
+        'codigo_e'     => 'string',
+        'codigo_p'     => 'string',
+
     ];
 
     /**

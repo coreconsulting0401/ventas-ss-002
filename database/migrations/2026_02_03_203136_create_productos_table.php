@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
-            $table->string('codigo_e', 12)->unique();
-            $table->string('codigo_p', 12)->unique();
+            $table->string('codigo_e', 17)->unique()->nullable();
+            $table->string('codigo_p', 17)->unique()->nullable();
             $table->string('nombre', 150);
             $table->string('marca', 50);
             $table->string('ubicacion', 10);
-            $table->decimal('precio_lista', 10, 2); // 7 enteros + 2 decimales
+            $table->decimal('precio_lista', 10, 3); // 7 enteros + 2 decimales
             $table->integer('stock');
             $table->foreignId('descuento_id')->nullable()->constrained('descuentos')->onDelete('set null');
             $table->timestamps();
