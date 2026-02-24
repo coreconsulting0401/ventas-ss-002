@@ -27,6 +27,9 @@ class DatabaseSeeder extends Seeder
             // Otros
             CategoriaSeeder::class,
             CreditoSeeder::class,
+            TransaccionSeeder::class,
+            EstadoSeeder::class,
+            TemperaturaSeeder::class,
             IgvSeeder::class,
             RolePermissionSeeder::class,
         ]);

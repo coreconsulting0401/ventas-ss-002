@@ -1,8 +1,11 @@
 <?php
 
 /**
- * REQUEST: ProformaRequest.php
+ * FORM REQUEST: ProformaRequest.php
  * Ubicación: app/Http/Requests/ProformaRequest.php
+ *
+ * Agrega la validación de direccion_id.
+ * El valor especial "principal" es válido (significa dirección principal del cliente).
  */
 
 namespace App\Http\Requests;
@@ -19,45 +22,48 @@ class ProformaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cliente_id' => 'required|exists:clientes,id',
-            'transaccion_id' => 'nullable|exists:transaccions,id',
-            'temperatura_id' => 'nullable|exists:temperaturas,id',
-            'estado_id' => 'nullable|exists:estados,id',
-            'nota' => 'nullable|string|max:200',
-            'orden' => 'nullable|string|max:20',
-            'moneda' => 'required|in:Dolares,Soles',
-            'sub_total' => 'required|numeric|min:0',
-            'monto_igv' => 'required|numeric|min:0',
-            'total' => 'required|numeric|min:0',
-            'fecha_creacion' => [
-                'required',
-                'date',
-                'after_or_equal:' . now()->format('Y-m-d')
+            'cliente_id'      => 'required|exists:clientes,id',
+
+            // "principal" es un valor especial permitido; de lo contrario debe existir en direccions
+            'direccion_id'    => [
+                'nullable',
+                function ($attribute, $value, $fail) {
+                    if ($value && $value !== 'principal') {
+                        if (!\App\Models\Direccion::find($value)) {
+                            $fail('La dirección seleccionada no es válida.');
+                        }
+                    }
+                },
             ],
-            'fecha_fin' => 'required|date|after_or_equal:fecha_creacion',
-            // Productos en la proforma
-            'productos' => 'required|array|min:1',
-            'productos.*.id' => 'required|exists:productos,id',
-            'productos.*.cantidad' => 'required|integer|min:1',
-            'productos.*.precio_unitario' => 'required|numeric|min:0',
-            'productos.*.descuento_cliente' => 'required|numeric|min:0|max:100',
+
+            'transaccion_id'  => 'nullable|exists:transaccions,id',
+            'temperatura_id'  => 'nullable|exists:temperaturas,id',
+            'estado_id'       => 'nullable|exists:estados,id',
+            'nota'            => 'nullable|string|max:500',
+            'orden'           => 'nullable|string|max:100',
+            'fecha_creacion'  => 'required|date',
+            'fecha_fin'       => 'required|date|after_or_equal:fecha_creacion',
+            'moneda'          => 'required|in:Dolares,Soles',
+            'sub_total'       => 'required|numeric|min:0',
+            'monto_igv'       => 'required|numeric|min:0',
+            'total'           => 'required|numeric|min:0',
+
+            'productos'                         => 'required|array|min:1',
+            'productos.*.id'                    => 'required|exists:productos,id',
+            'productos.*.cantidad'              => 'required|integer|min:1',
+            'productos.*.precio_unitario'       => 'required|numeric|min:0',
+            'productos.*.descuento_cliente'     => 'nullable|numeric|min:0|max:100',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'cliente_id.required' => 'Debe seleccionar un cliente',
-            'moneda.required' => 'La moneda es obligatoria',
-            'sub_total.required' => 'El subtotal es obligatorio',
-            'monto_igv.required' => 'El IGV es obligatorio',
-            'total.required' => 'El total es obligatorio',
-            'fecha_creacion.required' => 'La fecha de creación es obligatoria',
-            'fecha_creacion.after_or_equal' => 'La fecha de creación no puede ser anterior a hoy',
-            'fecha_fin.required' => 'La fecha de fin es obligatoria',
-            'fecha_fin.after_or_equal' => 'La fecha de fin no puede ser anterior a la fecha de creación',
-            'productos.required' => 'Debe seleccionar al menos un producto',
-            'productos.min' => 'Debe seleccionar al menos un producto',
+            'cliente_id.required'      => 'Debe seleccionar un cliente.',
+            'fecha_creacion.required'  => 'La fecha de creación es obligatoria.',
+            'fecha_fin.after_or_equal' => 'La fecha fin no puede ser anterior a la fecha de creación.',
+            'productos.required'       => 'Debe agregar al menos un producto.',
+            'productos.min'            => 'Debe agregar al menos un producto.',
         ];
     }
 }

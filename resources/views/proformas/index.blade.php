@@ -119,7 +119,9 @@
 
             @if($hayFiltros)
             <button type="button" onclick="irA()" class="btn btn-sm btn-outline-secondary ms-auto">
-                <i class="bi bi-x-circle"></i> Limpiar
+                <a href="{{ url('proformas') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise"></i> Limpiar Filtros
+                </a>
                 <span class="badge bg-secondary ms-1">{{ $numFiltros }}</span>
             </button>
             @endif
@@ -165,7 +167,9 @@
             <table class="table table-hover table-striped mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>N° Cotización</th><th>Cliente</th><th>Usuario</th>
+                        <th>N° Cotización</th><th>Cliente</th>
+                        <th>Dirección entrega</th>
+                        <th>Usuario</th>
                         <th>Fecha Creación</th><th>Fecha Fin</th><th>Estado</th>
                         <th>Temperatura</th><th>Total</th>
                         <th class="text-center" style="width:150px;">Acciones</th>
@@ -178,6 +182,21 @@
                         <td>
                             <strong>{{ Str::limit($proforma->cliente->razon,30) }}</strong><br>
                             <small class="text-muted">{{ $proforma->cliente->ruc }}</small>
+                        </td>
+                        <td>
+                            @if($proforma->direccion)
+                                <i class="bi bi-geo-alt-fill text-primary"></i>
+                                <small>{{ Str::limit($proforma->direccion->direccion, 35) }}</small>
+                                @if($proforma->direccion->distrito)
+                                    <br><small class="text-muted">{{ $proforma->direccion->distrito->nombre }}</small>
+                                @endif
+                            @elseif($proforma->cliente)
+                                <i class="bi bi-house-door text-secondary"></i>
+                                <small class="text-muted">{{ Str::limit($proforma->cliente->direccion, 35) }}</small>
+                                <br><small class="badge bg-light text-secondary border">Principal</small>
+                            @else
+                                <span class="badge bg-secondary">—</span>
+                            @endif
                         </td>
                         <td>
                             @if($proforma->user)
@@ -223,7 +242,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center py-5">
+                        <td colspan="10" class="text-center py-5">
                             <i class="bi bi-inbox" style="font-size:3rem;color:#ccc;"></i>
                             <p class="mt-2 text-muted">No se encontraron proformas</p>
                             @if($hayFiltros)

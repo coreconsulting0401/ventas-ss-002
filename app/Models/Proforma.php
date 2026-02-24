@@ -20,6 +20,7 @@ class Proforma extends Model
     protected $fillable = [
         'codigo',
         'cliente_id',
+        'direccion_id',
         'user_id',
         'transaccion_id',
         'temperatura_id',
@@ -59,6 +60,12 @@ class Proforma extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    /** Dirección de entrega seleccionada para esta proforma */
+    public function direccion(): BelongsTo
+    {
+        return $this->belongsTo(Direccion::class);
     }
 
     /**

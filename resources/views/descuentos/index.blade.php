@@ -48,7 +48,7 @@
                         <td>{{ $descuento->id }}</td>
                         <td>
                             <span class="badge bg-success">
-                                <i class="bi bi-percent"></i> {{ number_format($descuento->porcentaje, 2) }}%
+                                <i class="bi bi-percent"></i> {{ number_format($descuento->porcentaje, 2) }}
                             </span>
                         </td>
                         <td>

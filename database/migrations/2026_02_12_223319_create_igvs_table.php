@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('igvs', function (Blueprint $table) {
             $table->id();
-            $table->decimal('porcentaje', 5, 2)->default(18.00); // Ejemplo: 18.00
+            $table->decimal('porcentaje', 5, 2)->default(18.00); // default: 18.00
             $table->boolean('activo')->default(true); // Para manejar versiones del impuesto
             $table->timestamps();
         });

@@ -2,7 +2,6 @@
 
 /**
  * ARCHIVO: routes/web.php
- * Todas las rutas del sistema de gestión de proformas
  */
 
 use Illuminate\Support\Facades\Route;
@@ -25,119 +24,79 @@ use App\Http\Controllers\ProformaEstadisticasController;
 use App\Http\Controllers\ApiExternaController;
 use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\ClienteBusquedaController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+use App\Http\Controllers\ClienteDireccionesController; // ← nuevo
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// ─── Rutas protegidas por autenticación ───────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Perfil
     Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // ── Ubigeo (selects encadenados) ──────────────────────────────────────────
+    // ── Ubigeo ───────────────────────────────────────────────────────────────
     Route::prefix('ubigeo')->name('ubigeo.')->group(function () {
-        Route::get('provincias/{departamento_id}', [UbigeoController::class, 'provincias'])
-             ->name('provincias');
-        Route::get('distritos/{provincia_id}',     [UbigeoController::class, 'distritos'])
-             ->name('distritos');
+        Route::get('provincias/{departamento_id}', [UbigeoController::class, 'provincias'])->name('provincias');
+        Route::get('distritos/{provincia_id}',     [UbigeoController::class, 'distritos'])->name('distritos');
     });
 
-    // ── Contactos ─────────────────────────────────────────────────────────────
-    // IMPORTANTE: rutas con segmentos fijos ANTES del resource
+    // ── Contactos (ruta fija antes del resource) ─────────────────────────────
     Route::get('contactos/buscar-dni/{dni}', [ContactoController::class, 'buscarPorDni'])
          ->name('contactos.buscar-dni');
 
-
-    // ── Clientes ──────────────────────────────────────────────────────────────
+    // ── Clientes ─────────────────────────────────────────────────────────────
     Route::get('clientes/verificar-ruc/{ruc}', [ClienteController::class, 'verificarRuc'])
          ->name('clientes.verificar-ruc');
 
+    // ── API Externa ──────────────────────────────────────────────────────────
     Route::prefix('api-externa')->group(function () {
-        Route::get('consultar-ruc/{ruc}', [ApiExternaController::class, 'consultarRuc'])
-             ->name('api.consultar-ruc');
-        Route::get('consultar-dni/{dni}', [ApiExternaController::class, 'consultarDni'])
-             ->name('api.consultar-dni');
+        Route::get('consultar-ruc/{ruc}', [ApiExternaController::class, 'consultarRuc'])->name('api.consultar-ruc');
+        Route::get('consultar-dni/{dni}', [ApiExternaController::class, 'consultarDni'])->name('api.consultar-dni');
     });
 
-    // ── Proformas ─────────────────────────────────────────────────────────────
+    // ── Proformas (rutas fijas antes del resource) ───────────────────────────
     Route::get('proformas/{proforma}/pdf',         [ProformaPDFController::class, 'generarPDF'])->name('proformas.pdf');
     Route::get('proformas/{proforma}/pdf/preview', [ProformaPDFController::class, 'previsualizarPDF'])->name('proformas.pdf.preview');
-    Route::get('proformas/estadisticas',           [\App\Http\Controllers\ProformaEstadisticasController::class, '__invoke'])->name('proformas.estadisticas');
+    Route::get('proformas/estadisticas',           [ProformaEstadisticasController::class, '__invoke'])->name('proformas.estadisticas');
 
-    // ── API Interna para Selects Dinámicos ─────────────────────────────────
+    // ── API Interna ──────────────────────────────────────────────────────────
     Route::prefix('api')->group(function () {
-        Route::get('clientes/buscar', [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
-        Route::get('clientes/{id}', [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
+        Route::get('clientes/buscar',             [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
+        Route::get('clientes/{id}',               [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
+        // ↓ NUEVA: devuelve todas las direcciones (principal + agencias) de un cliente
+        Route::get('clientes/{cliente}/direcciones', ClienteDireccionesController::class)->name('api.clientes.direcciones');
     });
 
-    // ── Contactos ─────────────────────────────────────────────────────────────
-    Route::resource('contactos', ContactoController::class);
-
-    // ── Créditos ──────────────────────────────────────────────────────────────
-    Route::resource('creditos', CreditoController::class);
-
-    // ── Categorías ────────────────────────────────────────────────────────────
-    Route::resource('categorias', CategoriaController::class);
-
-    // ── Direcciones ───────────────────────────────────────────────────────────
-    Route::resource('direcciones', DireccionController::class);
-
-    // ── Productos ─────────────────────────────────────────────────────────────
-    Route::resource('productos', ProductoController::class);
-
-    // ── Descuentos ────────────────────────────────────────────────────────────
-    Route::resource('descuentos', DescuentoController::class);
-
-
-    Route::resource('proformas', ProformaController::class);
-
-    Route::resource('clientes', ClienteController::class);
-    // ── Transacciones ─────────────────────────────────────────────────────────
-    Route::resource('transacciones', TransaccionController::class)
-         ->parameters(['transacciones' => 'transaccion']);
-
-    // ── Temperaturas ──────────────────────────────────────────────────────────
+    // ── Resources ────────────────────────────────────────────────────────────
+    Route::resource('contactos',    ContactoController::class);
+    Route::resource('creditos',     CreditoController::class);
+    Route::resource('categorias',   CategoriaController::class);
+    Route::resource('direcciones',  DireccionController::class);
+    Route::resource('productos',    ProductoController::class);
+    Route::resource('descuentos',   DescuentoController::class);
+    Route::resource('proformas',    ProformaController::class);
+    Route::resource('clientes',     ClienteController::class);
+    Route::resource('transacciones', TransaccionController::class)->parameters(['transacciones' => 'transaccion']);
     Route::resource('temperaturas', TemperaturaController::class);
+    Route::resource('estados',      EstadoController::class);
+    Route::resource('virtuals',     VirtualController::class);
+    Route::resource('proveedores',  ProveedorController::class);
 
-    // ── Estados ───────────────────────────────────────────────────────────────
-    Route::resource('estados', EstadoController::class);
-
-    // ── Virtuals ──────────────────────────────────────────────────────────────
-    Route::resource('virtuals', VirtualController::class);
-
-    // ── Proveedores ───────────────────────────────────────────────────────────
-    Route::resource('proveedores', ProveedorController::class);
-
-    // ── Gestión de Usuarios ──────────────────────────────────────────────
     Route::middleware(['role:Administrador'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
         Route::resource('roles', \App\Http\Controllers\RoleController::class);
     });
 
-
-
     // Múltiples roles
     //Route::middleware(['role:Administrador|Vendedor'])->group(function () {
         // ...
     //});
-
-
 });
 
-// Rutas de autenticación (Laravel Breeze)
 require __DIR__.'/auth.php';

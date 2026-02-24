@@ -19,22 +19,17 @@ use Illuminate\Support\Facades\DB;
 
 class ProformaController extends Controller
 {
-    /**
-     * Display a listing with search and filters
-     */
     public function index(Request $request)
     {
         $query = Proforma::query();
 
-        // ── Filtro por N° Cotización (id numérico, ignora prefijo NCT- y ceros)
         if ($request->filled('id')) {
-            $rawId = preg_replace('/[^0-9]/', '', $request->id); // extrae solo dígitos
+            $rawId = preg_replace('/[^0-9]/', '', $request->id);
             if ($rawId !== '') {
                 $query->where('id', (int) $rawId);
             }
         }
 
-        // ── Filtro por cliente: busca en razón social Y en ruc
         if ($request->filled('razon')) {
             $razon = $request->razon;
             $query->whereHas('cliente', function ($q) use ($razon) {
@@ -43,17 +38,15 @@ class ProformaController extends Controller
             });
         }
 
-        // ── Filtro por usuario: busca en name, dni y codigo del user
         if ($request->filled('nombre')) {
             $nombre = $request->nombre;
             $query->whereHas('user', function ($q) use ($nombre) {
-                $q->where('name',   'like', "%{$nombre}%")
+                $q->where('name',    'like', "%{$nombre}%")
                   ->orWhere('dni',   'like', "%{$nombre}%")
                   ->orWhere('codigo','like', "%{$nombre}%");
             });
         }
 
-        // ── Filtro por estado (nombre del estado)
         if ($request->filled('estado')) {
             $estado = $request->estado;
             $query->whereHas('estado', function ($q) use ($estado) {
@@ -61,7 +54,6 @@ class ProformaController extends Controller
             });
         }
 
-        // ── Filtro por temperatura (nombre de la temperatura)
         if ($request->filled('temperatura')) {
             $temperatura = $request->temperatura;
             $query->whereHas('temperatura', function ($q) use ($temperatura) {
@@ -69,7 +61,6 @@ class ProformaController extends Controller
             });
         }
 
-        // ── Filtro por rango de fecha_creacion
         if ($request->filled('fecha_creacion_desde')) {
             $query->where('fecha_creacion', '>=', $request->fecha_creacion_desde);
         }
@@ -77,7 +68,6 @@ class ProformaController extends Controller
             $query->where('fecha_creacion', '<=', $request->fecha_creacion_hasta);
         }
 
-        // ── Filtro por rango de fecha_fin
         if ($request->filled('fecha_fin_desde')) {
             $query->where('fecha_fin', '>=', $request->fecha_fin_desde);
         }
@@ -85,16 +75,16 @@ class ProformaController extends Controller
             $query->where('fecha_fin', '<=', $request->fecha_fin_hasta);
         }
 
-        // ── Mantener paginación con los filtros activos en la URL
         $proformas = $query->with([
             'cliente',
+            'direccion',          // ← carga la dirección seleccionada
             'user',
             'transaccion',
             'temperatura',
             'estado',
         ])->latest()->paginate(15)->withQueryString();
 
-        $clientes     = Cliente::all();
+        $clientes      = Cliente::all();
         $transacciones = Transaccion::all();
         $temperaturas  = Temperatura::all();
         $estados       = Estado::all();
@@ -112,7 +102,6 @@ class ProformaController extends Controller
     {
         // NO cargar todos los clientes (ahora es dinámico)
         // $clientes = Cliente::all(); // <-- Eliminar esta línea
-
         $productos     = Producto::where('stock', '>', 0)->get();
         $virtuals      = Virtual::where('stock', '>', 0)->get();
         $transacciones = Transaccion::all();
@@ -120,7 +109,6 @@ class ProformaController extends Controller
         $estados       = Estado::all();
 
         return view('proformas.create', compact(
-            // 'clientes', // <-- Eliminar
             'productos',
             'virtuals',
             'transacciones',
@@ -129,7 +117,6 @@ class ProformaController extends Controller
         ));
     }
 
-
     public function store(ProformaRequest $request)
     {
         try {
@@ -137,6 +124,11 @@ class ProformaController extends Controller
 
             $data = $request->validated();
             $data['user_id'] = Auth::id();
+
+            // Convertir "principal" → null (la dirección principal no está en la tabla direccions)
+            if (isset($data['direccion_id']) && $data['direccion_id'] === 'principal') {
+                $data['direccion_id'] = null;
+            }
 
             $productos = $data['productos'] ?? [];
             unset($data['productos']);
@@ -170,6 +162,7 @@ class ProformaController extends Controller
     {
         $proforma->load([
             'cliente',
+            'direccion.distrito.provincia.departamento',  // ← carga ubigeo completo
             'user',
             'transaccion',
             'temperatura',
@@ -184,12 +177,12 @@ class ProformaController extends Controller
     {
         $proforma->load([
             'productos' => fn($q) => $q->with('descuento'),
-            'cliente' // <-- Asegurar que cargue el cliente
+            'cliente', // <-- Asegurar que cargue el cliente para mostrar su dirección principal
+            'direccion',
         ]);
 
         // NO cargar todos los clientes (ahora es dinámico)
         // $clientes = Cliente::all(); // <-- Eliminar esta línea
-
         $productos     = Producto::where('stock', '>', 0)->get();
         $virtuals      = Virtual::where('stock', '>', 0)->get();
         $transacciones = Transaccion::all();
@@ -197,7 +190,6 @@ class ProformaController extends Controller
         $estados       = Estado::all();
 
         return view('proformas.edit', compact(
-            // 'clientes', // <-- Eliminar
             'proforma',
             'productos',
             'virtuals',
@@ -215,6 +207,11 @@ class ProformaController extends Controller
             $data      = $request->validated();
             $productos = $data['productos'] ?? [];
             unset($data['productos']);
+
+            // Convertir "principal" → null
+            if (isset($data['direccion_id']) && $data['direccion_id'] === 'principal') {
+                $data['direccion_id'] = null;
+            }
 
             $proforma->update($data);
 
