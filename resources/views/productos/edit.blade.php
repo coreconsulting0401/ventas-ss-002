@@ -131,7 +131,8 @@
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label for="ubicacion" class="form-label">
-                            <i class="bi bi-geo-alt"></i> Ubicación <span class="text-danger">*</span>
+                            <i class="bi bi-geo-alt"></i> Ubicación
+                            <span class="text-muted small">(opcional)</span>
                         </label>
                         <input type="text"
                                class="form-control @error('ubicacion') is-invalid @enderror"
@@ -139,12 +140,12 @@
                                name="ubicacion"
                                value="{{ old('ubicacion', $producto->ubicacion) }}"
                                placeholder="Ej: A1-B2-C3"
-                               maxlength="10"
-                               required>
+                               maxlength="20">
                         @error('ubicacion')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <small class="text-muted">Máximo 10 caracteres</small>
+                        <small class="text-muted">Máximo 20 caracteres</small>
+
                     </div>
                 </div>
 

@@ -31,6 +31,7 @@ class Producto extends Model
         'precio_lista' => 'decimal:3',
         'codigo_e'     => 'string',
         'codigo_p'     => 'string',
+        'ubicacion'    => 'string',
 
     ];
 

@@ -36,7 +36,7 @@ class ProductoRequest extends FormRequest
             ],
             'nombre' => 'required|string|max:150',
             'marca' => 'required|string|max:50',
-            'ubicacion' => 'required|string|max:10',
+            'ubicacion' => 'nullable|string|max:20',
             'precio_lista' => 'required|numeric|min:0|regex:/^\d{1,7}(\.\d{1,3})?$/',
             'stock' => 'required|integer|min:0',
             'descuento_id' => 'nullable|exists:descuentos,id',
@@ -50,6 +50,11 @@ class ProductoRequest extends FormRequest
             'codigo_p.unique'      => 'Este código de Producto (inerno) ya está registrado en otro producto',
             'precio_lista.regex'   => 'El precio debe tener máximo 7 enteros y 3 decimales',
             'stock.min'            => 'El stock no puede ser negativo',
+            'precio_lista.min'     => 'El precio no puede ser negativo',
+            'descuento_id.exists'  => 'El descuento seleccionado no existe',
+            'marca.required'       => 'La marca es obligatoria',
+            'nombre.required'      => 'El nombre es obligatorio',
+            'ubicacion.max'        => 'La ubicación debe tener un máximo de 20 caracteres',
         ];
     }
 
