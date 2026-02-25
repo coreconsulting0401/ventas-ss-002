@@ -27,6 +27,7 @@ use App\Http\Controllers\ClienteBusquedaController;
 use App\Http\Controllers\ClienteDireccionesController;
 use App\Http\Controllers\CambioController;
 use App\Http\Controllers\ProductoImportController;
+use App\Http\Controllers\EmpresaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -111,6 +112,17 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:Administrador'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
         Route::resource('roles', \App\Http\Controllers\RoleController::class);
+    });
+
+
+    // ── Empresa (Solo un registro) ────────────────────────────────────────────
+    Route::middleware(['role:Administrador'])->prefix('empresa')->name('empresas.')->group(function () {
+        Route::get('/', [EmpresaController::class, 'index'])->name('index');
+        Route::get('/crear', [EmpresaController::class, 'create'])->name('create');
+        Route::post('/crear', [EmpresaController::class, 'store'])->name('store');
+        Route::get('/{empresa}/editar', [EmpresaController::class, 'edit'])->name('edit');
+        Route::put('/{empresa}', [EmpresaController::class, 'update'])->name('update');
+        Route::delete('/{empresa}', [EmpresaController::class, 'destroy'])->name('destroy');
     });
 
     // Múltiples roles

@@ -33,6 +33,10 @@ class DatabaseSeeder extends Seeder
             TemperaturaSeeder::class,
             IgvSeeder::class,
             RolePermissionSeeder::class,
+            EmpresaSeeder::class,
+            EmailEmpresaSeeder::class,
+            TelefonoEmpresaSeeder::class,
+
         ]);
     }
 }

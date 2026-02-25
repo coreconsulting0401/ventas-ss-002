@@ -634,7 +634,16 @@
                         <span>Roles</span>
                     </a>
                 </li>
+                @endrole
 
+                @role('Administrador')
+                <li class="nav-item">
+                    <a href="{{ route('empresas.index') }}"
+                    class="nav-link {{ request()->routeIs('empresas.*') ? 'active' : '' }}">
+                        <i class="bi bi-building"></i>
+                        <span>Empresa</span>
+                    </a>
+                </li>
                 @endrole
             </ul>
         </div>
