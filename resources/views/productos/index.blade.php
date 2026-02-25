@@ -7,14 +7,57 @@
     <h2>
         <i class="bi bi-box-seam"></i> Gestión de Productos
     </h2>
-    <a href="{{ route('productos.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Nuevo Producto
-    </a>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImportarExcel">
+            <i class="bi bi-file-earmark-excel"></i> Carga masiva Excel
+        </button>
+        <a href="{{ route('productos.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Producto
+        </a>
+    </div>
 </div>
 @endsection
 
 @section('content')
-<!-- Filtros de Búsqueda -->
+
+{{-- =====================================================================
+     ALERTAS DE IMPORTACIÓN
+     ===================================================================== --}}
+@if(session('import_success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <strong>{{ session('import_success') }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if(session('import_error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-x-circle-fill me-2"></i>
+        <strong>{{ session('import_error') }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if(session('import_errores'))
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Se encontraron errores en {{ count(session('import_errores')) }} fila(s):</strong>
+        <ul class="mb-0 mt-2">
+            @foreach(session('import_errores') as $err)
+                <li>
+                    <strong>Fila {{ $err['fila'] }}</strong> — {{ $err['nombre'] }}:
+                    {{ implode(' | ', $err['errores']) }}
+                </li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+{{-- =====================================================================
+     FILTROS DE BÚSQUEDA
+     ===================================================================== --}}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <form action="{{ route('productos.index') }}" method="GET" id="formFiltros">
@@ -101,7 +144,9 @@
     </div>
 </div>
 
-<!-- Tabla de Productos -->
+{{-- =====================================================================
+     TABLA DE PRODUCTOS
+     ===================================================================== --}}
 <div class="card">
     <div class="card-header">
         <div class="row align-items-center">
@@ -224,64 +269,216 @@
         </div>
     </div>
 </div>
+
+{{-- =====================================================================
+     MODAL: CARGA MASIVA EXCEL
+     ===================================================================== --}}
+<div class="modal fade" id="modalImportarExcel" tabindex="-1" aria-labelledby="modalImportarExcelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalImportarExcelLabel">
+                    <i class="bi bi-file-earmark-excel-fill me-2"></i> Carga Masiva de Productos desde Excel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+
+                {{-- Instrucciones --}}
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle-fill me-1"></i> ¿Cómo funciona?</h6>
+                    <ul class="mb-0 small">
+                        <li>Sube un archivo <strong>.xlsx</strong> o <strong>.xls</strong> con los productos.</li>
+                        <li>
+                            <strong>Columnas obligatorias:</strong>
+                            <code>nombre</code>, <code>marca</code>, <code>precio_lista</code>, <code>stock</code>
+                        </li>
+                        <li>
+                            <strong>Columnas opcionales:</strong>
+                            <code>codigo_e</code>, <code>codigo_p</code>, <code>ubicacion</code>, <code>descuento_id</code>
+                        </li>
+                        <li>
+                            <strong>Lógica de actualización:</strong>
+                            si el producto ya existe (identificado por <code>codigo_p</code> o <code>codigo_e</code>),
+                            se actualizará; de lo contrario se creará como nuevo.
+                        </li>
+                        <li>Tamaño máximo: <strong>5 MB</strong>.</li>
+                    </ul>
+                </div>
+
+                {{-- Descarga de plantilla --}}
+                <div class="mb-4 d-flex align-items-center gap-3">
+                    <span class="text-muted small">¿Necesitas la plantilla?</span>
+                    <a href="{{ route('productos.import.template') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-download me-1"></i> Descargar plantilla Excel
+                    </a>
+                </div>
+
+                {{-- Formulario de carga --}}
+                <form action="{{ route('productos.import') }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      id="formImportarExcel">
+                    @csrf
+
+                    <div class="mb-3">
+                        <label for="archivo_excel" class="form-label fw-semibold">
+                            <i class="bi bi-upload me-1"></i> Seleccionar archivo Excel
+                        </label>
+                        <input type="file"
+                               class="form-control @error('archivo_excel') is-invalid @enderror"
+                               id="archivo_excel"
+                               name="archivo_excel"
+                               accept=".xlsx,.xls">
+                        @error('archivo_excel')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Vista previa del archivo seleccionado --}}
+                    <div id="archivoSeleccionado" class="d-none">
+                        <div class="d-flex align-items-center gap-2 p-2 border rounded bg-light">
+                            <i class="bi bi-file-earmark-excel text-success fs-4"></i>
+                            <div>
+                                <div class="fw-semibold small" id="nombreArchivo"></div>
+                                <div class="text-muted" style="font-size: 0.75rem;" id="tamanoArchivo"></div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="btnQuitarArchivo">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </button>
+                <button type="submit"
+                        form="formImportarExcel"
+                        class="btn btn-success"
+                        id="btnImportar"
+                        disabled>
+                    <span id="btnImportarTexto">
+                        <i class="bi bi-cloud-upload me-1"></i> Importar productos
+                    </span>
+                    <span id="btnImportarCargando" class="d-none">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        Procesando...
+                    </span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* ------------------------------------------------------------------ */
+    /*  Búsqueda en tiempo real en la tabla                                 */
+    /* ------------------------------------------------------------------ */
     const searchInput = document.getElementById('searchInput');
-    const tableRows = document.querySelectorAll('#productosTable tr');
+    const tableRows   = document.querySelectorAll('#productosTable tr');
 
-    // Búsqueda en tiempo real en la tabla
-    searchInput.addEventListener('keyup', function() {
-        const searchTerm = this.value.toLowerCase();
-
+    searchInput.addEventListener('keyup', function () {
+        const term = this.value.toLowerCase();
         tableRows.forEach(row => {
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-
-            for (let i = 0; i < cells.length; i++) {
-                if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            row.style.display = found ? '' : 'none';
+            const text = Array.from(row.getElementsByTagName('td'))
+                              .map(td => td.textContent.toLowerCase())
+                              .join(' ');
+            row.style.display = text.includes(term) ? '' : 'none';
         });
     });
 
-    // Botón TODOS - limpiar todos los filtros
-    document.getElementById('btnTodos').addEventListener('click', function() {
-        document.querySelectorAll('#formFiltros input').forEach(input => {
-            input.value = '';
-        });
+    /* ------------------------------------------------------------------ */
+    /*  Botón TODOS                                                         */
+    /* ------------------------------------------------------------------ */
+    document.getElementById('btnTodos').addEventListener('click', function () {
+        document.querySelectorAll('#formFiltros input').forEach(i => (i.value = ''));
         document.getElementById('formFiltros').submit();
     });
 
-    // Botón Solo Stock - filtrar productos con stock > 0
-    document.getElementById('btnSoloStock').addEventListener('click', function() {
-        // Limpiar otros filtros
-        document.querySelectorAll('#formFiltros input').forEach(input => {
-            if (input.name !== 'stock_min') {
-                input.value = '';
-            }
+    /* ------------------------------------------------------------------ */
+    /*  Botón Solo Stock                                                    */
+    /* ------------------------------------------------------------------ */
+    document.getElementById('btnSoloStock').addEventListener('click', function () {
+        document.querySelectorAll('#formFiltros input').forEach(i => {
+            if (i.name !== 'stock_min') i.value = '';
         });
-
-        // Agregar filtro de stock mínimo
         let stockInput = document.querySelector('input[name="stock_min"]');
         if (!stockInput) {
             stockInput = document.createElement('input');
-            stockInput.type = 'hidden';
-            stockInput.name = 'stock_min';
+            stockInput.type  = 'hidden';
+            stockInput.name  = 'stock_min';
             stockInput.value = '1';
             document.getElementById('formFiltros').appendChild(stockInput);
         } else {
             stockInput.value = '1';
         }
-
         document.getElementById('formFiltros').submit();
     });
+
+    /* ------------------------------------------------------------------ */
+    /*  Modal de importación — lógica del input file                        */
+    /* ------------------------------------------------------------------ */
+    const inputArchivo         = document.getElementById('archivo_excel');
+    const divArchivoSeleccionado = document.getElementById('archivoSeleccionado');
+    const spanNombre           = document.getElementById('nombreArchivo');
+    const spanTamano           = document.getElementById('tamanoArchivo');
+    const btnImportar          = document.getElementById('btnImportar');
+    const btnQuitarArchivo     = document.getElementById('btnQuitarArchivo');
+    const formImportar         = document.getElementById('formImportarExcel');
+
+    inputArchivo.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            spanNombre.textContent  = file.name;
+            spanTamano.textContent  = formatBytes(file.size);
+            divArchivoSeleccionado.classList.remove('d-none');
+            btnImportar.disabled    = false;
+        } else {
+            resetFileInput();
+        }
+    });
+
+    btnQuitarArchivo.addEventListener('click', function () {
+        resetFileInput();
+    });
+
+    formImportar.addEventListener('submit', function () {
+        btnImportar.disabled = true;
+        document.getElementById('btnImportarTexto').classList.add('d-none');
+        document.getElementById('btnImportarCargando').classList.remove('d-none');
+    });
+
+    function resetFileInput() {
+        inputArchivo.value          = '';
+        divArchivoSeleccionado.classList.add('d-none');
+        btnImportar.disabled        = true;
+        spanNombre.textContent      = '';
+        spanTamano.textContent      = '';
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024)       return bytes + ' B';
+        if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    /* ---- Abrir modal si hay errores de validación del archivo ---- */
+    @if($errors->has('archivo_excel'))
+        var modal = new bootstrap.Modal(document.getElementById('modalImportarExcel'));
+        modal.show();
+    @endif
 });
 </script>
 @endpush

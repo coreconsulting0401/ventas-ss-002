@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             DistritoSeeder::class,
 
             // Otros
+            DescuentoSeeder::class,
             CategoriaSeeder::class,
             CreditoSeeder::class,
             TransaccionSeeder::class,

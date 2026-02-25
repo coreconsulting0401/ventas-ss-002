@@ -38,7 +38,8 @@ class RolePermissionSeeder extends Seeder
             'virtuals',
             'proveedores',
             'users',      // ← NUEVO
-            'roles',      // ← NUEVO
+            'roles',
+            'cambios',     // ← NUEVO
         ];
 
         $actions = ['view', 'create', 'edit', 'delete'];

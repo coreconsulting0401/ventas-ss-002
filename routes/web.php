@@ -25,7 +25,8 @@ use App\Http\Controllers\ApiExternaController;
 use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\ClienteBusquedaController;
 use App\Http\Controllers\ClienteDireccionesController;
-use App\Http\Controllers\CambioController;              // ← NUEVO
+use App\Http\Controllers\CambioController;
+use App\Http\Controllers\ProductoImportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -83,6 +84,14 @@ Route::middleware(['auth'])->group(function () {
              ->name('consultar-hoy')
              ->middleware('role:Administrador');
     });
+
+    // ── Importación de Productos ─────────────────────────────────────────────
+    // Rutas de importación masiva Excel
+    Route::get('/productos/import/template', [ProductoImportController::class, 'downloadTemplate'])
+        ->name('productos.import.template');
+
+    Route::post('/productos/import', [ProductoImportController::class, 'import'])
+        ->name('productos.import');
 
     // ── Resources ─────────────────────────────────────────────────────────────
     Route::resource('contactos',     ContactoController::class);
