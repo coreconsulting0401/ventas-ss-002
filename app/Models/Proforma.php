@@ -18,35 +18,20 @@ class Proforma extends Model
     use HasFactory;
 
     protected $fillable = [
-        'codigo',
-        'cliente_id',
-        'direccion_id',
-        'user_id',
-        'transaccion_id',
-        'temperatura_id',
-        'estado_id',
-        'nota',
-        'orden',
-        'fecha_creacion',
-        'fecha_fin',
-        'moneda',
-        'sub_total',
-        'monto_igv',
-        'total',
+        'codigo', 'cliente_id', 'direccion_id', 'user_id',
+        'transaccion_id', 'temperatura_id', 'estado_id',
+        'nota', 'orden', 'fecha_creacion', 'fecha_fin',
+        'moneda', 'sub_total', 'monto_igv', 'total',
     ];
 
     protected $casts = [
         'fecha_creacion' => 'date',
-        'fecha_fin' => 'date',
+        'fecha_fin'      => 'date',
     ];
 
-    /**
-     * Boot del modelo para generar UUID automáticamente
-     */
     protected static function boot()
     {
         parent::boot();
-
         static::creating(function ($proforma) {
             if (!$proforma->codigo) {
                 $proforma->codigo = (string) Str::uuid();
@@ -54,55 +39,29 @@ class Proforma extends Model
         });
     }
 
-    /**
-     * Relación muchos a uno con Cliente
-     */
-    public function cliente(): BelongsTo
+    // ── Helpers de moneda ────────────────────────────────────────────────────
+
+    /** Devuelve el símbolo de la moneda: '$' o 'S/.' */
+    public function simboloMoneda(): string
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->moneda === 'Dolares' ? '$' : 'S/.';
     }
 
-    /** Dirección de entrega seleccionada para esta proforma */
-    public function direccion(): BelongsTo
+    /** True si la proforma está en Dólares */
+    public function esDolares(): bool
     {
-        return $this->belongsTo(Direccion::class);
+        return $this->moneda === 'Dolares';
     }
 
-    /**
-     * Relación muchos a uno con User
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
+    // ── Relaciones ───────────────────────────────────────────────────────────
 
-    /**
-     * Relación muchos a uno con Transaccion
-     */
-    public function transaccion(): BelongsTo
-    {
-        return $this->belongsTo(Transaccion::class);
-    }
+    public function cliente(): BelongsTo   { return $this->belongsTo(Cliente::class); }
+    public function direccion(): BelongsTo { return $this->belongsTo(Direccion::class); }
+    public function user(): BelongsTo      { return $this->belongsTo(User::class); }
+    public function transaccion(): BelongsTo { return $this->belongsTo(Transaccion::class); }
+    public function temperatura(): BelongsTo { return $this->belongsTo(Temperatura::class); }
+    public function estado(): BelongsTo    { return $this->belongsTo(Estado::class); }
 
-    /**
-     * Relación muchos a uno con Temperatura
-     */
-    public function temperatura(): BelongsTo
-    {
-        return $this->belongsTo(Temperatura::class);
-    }
-
-    /**
-     * Relación muchos a uno con Estado
-     */
-    public function estado(): BelongsTo
-    {
-        return $this->belongsTo(Estado::class);
-    }
-
-    /**
-    * Relación muchos a muchos con Producto
-    */
     public function productos(): BelongsToMany
     {
         return $this->belongsToMany(Producto::class, 'producto_proforma')
@@ -110,9 +69,6 @@ class Proforma extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Relación muchos a muchos con Virtual
-     */
     public function virtuals(): BelongsToMany
     {
         return $this->belongsToMany(Virtual::class, 'proforma_virtual')

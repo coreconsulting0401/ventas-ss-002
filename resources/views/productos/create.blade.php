@@ -7,6 +7,10 @@
     <h2>
         <i class="bi bi-box-seam"></i> Nuevo Producto
     </h2>
+    <!-- aviso : ingrese precio de lista en soles sin aplicar descuento -->
+    <h2 class="text-danger">
+        <i class="bi bi-exclamation-triangle"></i> Aviso: Ingrese precio de lista en soles sin aplicar descuento
+    </h2>
     <a href="{{ route('productos.index') }}" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Volver
     </a>

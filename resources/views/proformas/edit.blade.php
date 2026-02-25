@@ -20,6 +20,18 @@
 @endpush
 
 @section('content')
+
+{{-- ── Calcular precio en soles para cada producto existente ──────────────── --}}
+{{-- Si la proforma está en Dólares, se multiplica por venta_mas para obtener S/. --}}
+@php
+    $ventaMasActual = ($tipoCambio && $tipoCambio->venta_mas && $tipoCambio->estado === 'ok')
+        ? (float) $tipoCambio->venta_mas
+        : 0;
+
+    $proformaEsDolares = $proforma->moneda === 'Dolares';
+    $symActual         = $proforma->simboloMoneda();
+@endphp
+
 <form action="{{ route('proformas.update', $proforma->id) }}" method="POST" id="formProforma">
     @csrf
     @method('PUT')
@@ -35,273 +47,306 @@
     </div>
 
     <!-- Información del Cliente -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-person-lines-fill"></i> Información del Cliente</h5>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-person-lines-fill"></i> Información del Cliente</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="cliente_id" class="form-label">
+                        <i class="bi bi-people"></i> Cliente <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select select2-clientes @error('cliente_id') is-invalid @enderror"
+                            id="cliente_id" name="cliente_id" required>
+                        <option value="">Seleccionar cliente...</option>
+                        @if($proforma->cliente)
+                            <option value="{{ $proforma->cliente_id }}" selected>
+                                {{ $proforma->cliente->razon }} - {{ $proforma->cliente->ruc }}
+                            </option>
+                        @endif
+                    </select>
+                    @error('cliente_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        {{-- Fila 1: Cliente y Dirección --}}
-                        <div class="col-md-6 mb-3">
-                            <label for="cliente_id" class="form-label">
-                                <i class="bi bi-people"></i> Cliente <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select select2-clientes @error('cliente_id') is-invalid @enderror"
-                                    id="cliente_id" name="cliente_id" required>
-                                <option value="">Seleccionar cliente...</option>
-                                @if($proforma->cliente)
-                                    <option value="{{ $proforma->cliente_id }}" selected>
-                                        {{ $proforma->cliente->razon }} - {{ $proforma->cliente->ruc }}
-                                    </option>
-                                @endif
-                            </select>
-                            @error('cliente_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3" id="wrapDireccion">
-                            <label for="direccion_id" class="form-label">
-                                <i class="bi bi-geo-alt"></i> Dirección de entrega
-                            </label>
-                            <select class="form-select @error('direccion_id') is-invalid @enderror"
-                                    id="direccion_id" name="direccion_id">
-                                <option value="">— Cargando... —</option>
-                            </select>
-                            <small class="text-muted" id="hintDireccion"></small>
-                            @error('direccion_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        {{-- Fila 2: Nota, Orden y Fechas --}}
-                        <div class="col-md-3 mb-3">
-                            <label for="nota" class="form-label">
-                                <i class="bi bi-chat-left-text"></i> Nota
-                            </label>
-                            <input type="text" class="form-control @error('nota') is-invalid @enderror"
-                                id="nota" name="nota" value="{{ old('nota', $proforma->nota) }}"
-                                placeholder="Nota adicional">
-                            @error('nota')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label for="orden" class="form-label">
-                                <i class="bi bi-hash"></i> N° Orden
-                            </label>
-                            <input type="text" class="form-control @error('orden') is-invalid @enderror"
-                                id="orden" name="orden" value="{{ old('orden', $proforma->orden) }}"
-                                placeholder="Número de orden">
-                            @error('orden')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label for="fecha_creacion" class="form-label">
-                                <i class="bi bi-calendar-check"></i> F. Creación <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" class="form-control @error('fecha_creacion') is-invalid @enderror"
-                                id="fecha_creacion" name="fecha_creacion"
-                                value="{{ old('fecha_creacion', $proforma->fecha_creacion ? $proforma->fecha_creacion->format('Y-m-d') : '') }}"
-                                required>
-                            @error('fecha_creacion')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label for="fecha_fin" class="form-label">
-                                <i class="bi bi-calendar-x"></i> Fecha Fin <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" class="form-control @error('fecha_fin') is-invalid @enderror"
-                                id="fecha_fin" name="fecha_fin"
-                                value="{{ old('fecha_fin', $proforma->fecha_fin ? $proforma->fecha_fin->format('Y-m-d') : '') }}"
-                                required>
-                            @error('fecha_fin')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                    </div>
+                <div class="col-md-6 mb-3" id="wrapDireccion">
+                    <label for="direccion_id" class="form-label">
+                        <i class="bi bi-geo-alt"></i> Dirección de entrega
+                    </label>
+                    <select class="form-select @error('direccion_id') is-invalid @enderror"
+                            id="direccion_id" name="direccion_id">
+                        <option value="">— Cargando... —</option>
+                    </select>
+                    <small class="text-muted" id="hintDireccion"></small>
+                    @error('direccion_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="nota" class="form-label"><i class="bi bi-chat-left-text"></i> Nota</label>
+                    <input type="text" class="form-control" id="nota" name="nota"
+                           value="{{ old('nota', $proforma->nota) }}" placeholder="Nota adicional">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="orden" class="form-label"><i class="bi bi-hash"></i> N° Orden</label>
+                    <input type="text" class="form-control" id="orden" name="orden"
+                           value="{{ old('orden', $proforma->orden) }}" placeholder="Número de orden">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="fecha_creacion" class="form-label">
+                        <i class="bi bi-calendar-check"></i> F. Creación <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control @error('fecha_creacion') is-invalid @enderror"
+                           id="fecha_creacion" name="fecha_creacion"
+                           value="{{ old('fecha_creacion', $proforma->fecha_creacion?->format('Y-m-d')) }}" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="fecha_fin" class="form-label">
+                        <i class="bi bi-calendar-x"></i> Fecha Fin <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control @error('fecha_fin') is-invalid @enderror"
+                           id="fecha_fin" name="fecha_fin"
+                           value="{{ old('fecha_fin', $proforma->fecha_fin?->format('Y-m-d')) }}" required>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Lista de Productos -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-cart-plus"></i> Productos</h5>
-                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalBuscarProducto">
-                        <i class="bi bi-search"></i> Buscar Producto
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="tablaProductos">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:10%;">Código</th>
-                                    <th style="width:35%;">Descripción</th>
-                                    <th style="width:10%;">Cantidad</th>
-                                    <th style="width:12%;">Precio Unit.</th>
-                                    <th style="width:13%;">Desc. Cliente (%)</th>
-                                    <th style="width:12%;">Subtotal</th>
-                                    <th style="width:8%;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productosContainer">
-                                @php $productoCount = 0; @endphp
-                                @forelse($proforma->productos as $producto)
-                                <tr id="producto-{{ $productoCount }}">
-                                    <td>
-                                        <span class="badge bg-info">{{ $producto->codigo_p }}</span>
-                                        <input type="hidden" name="productos[{{ $productoCount }}][id]" value="{{ $producto->id }}">
-                                    </td>
-                                    <td>
-                                        <strong>{{ $producto->nombre }}</strong>
-                                        <br><small class="text-muted">{{ $producto->marca }}</small>
-                                    </td>
-                                    <td>
-                                        <input type="number"
-                                               name="productos[{{ $productoCount }}][cantidad]"
-                                               class="form-control form-control-sm cantidad-input"
-                                               value="{{ $producto->pivot->cantidad ?? 1 }}"
-                                               min="1" max="{{ $producto->stock }}"
-                                               data-stock="{{ $producto->stock }}" required
-                                               onchange="calcularSubtotal({{ $productoCount }})">
-                                    </td>
-                                    <td>
-                                        <input type="number"
-                                               name="productos[{{ $productoCount }}][precio_unitario]"
-                                               class="form-control form-control-sm precio-input"
-                                               step="0.01" min="0"
-                                               value="{{ $producto->pivot->precio_unitario ?? $producto->precio_lista }}"
-                                               required
-                                               onchange="calcularSubtotal({{ $productoCount }})">
-                                    </td>
-                                    <td>
-                                        <input type="number"
-                                               name="productos[{{ $productoCount }}][descuento_cliente]"
-                                               class="form-control form-control-sm descuento-input"
-                                               step="0.01" min="0"
-                                               max="{{ $producto->descuento ? $producto->descuento->porcentaje : 100 }}"
-                                               value="{{ $producto->pivot->descuento_cliente ?? 0 }}"
-                                               data-max-descuento="{{ $producto->descuento ? $producto->descuento->porcentaje : 100 }}"
-                                               onchange="validarDescuento({{ $productoCount }})">
-                                    </td>
-                                    <td>
-                                        @php
-                                            $sub = ($producto->pivot->cantidad ?? 1)
-                                                 * ($producto->pivot->precio_unitario ?? $producto->precio_lista)
-                                                 * (1 - ($producto->pivot->descuento_cliente ?? 0) / 100);
-                                        @endphp
-                                        <span class="subtotal" id="subtotal-{{ $productoCount }}">
-                                            S/. {{ number_format($sub, 2) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="eliminarProducto({{ $productoCount }})">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @php $productoCount++; @endphp
-                                @empty
-                                @endforelse
-                            </tbody>
-                            <tfoot>
-                                <tr class="table-primary">
-                                    <th colspan="5" class="text-end fw-bold">TOTAL:</th>
-                                    <th id="totalGeneral" class="fw-bold fs-5">S/. 0.00</th>
-                                    <th></th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
+    <!-- Productos -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-cart-plus"></i> Productos
+                <span id="badgeMoneda" class="badge ms-2
+                    {{ $proformaEsDolares ? 'bg-success' : 'bg-warning text-dark' }}">
+                    {{ $proformaEsDolares ? '$ Dólares (USD)' : 'S/ Soles' }}
+                </span>
+            </h5>
+            <button type="button" class="btn btn-sm btn-info"
+                    data-bs-toggle="modal" data-bs-target="#modalBuscarProducto">
+                <i class="bi bi-search"></i> Buscar Producto
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaProductos">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:10%;">Código</th>
+                            <th style="width:35%;">Descripción</th>
+                            <th style="width:10%;">Cantidad</th>
+                            <th style="width:12%;">Precio Unit.</th>
+                            <th style="width:13%;">Desc. Cliente (%)</th>
+                            <th style="width:12%;">Subtotal</th>
+                            <th style="width:8%;">Acc.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productosContainer">
+                        @php $productoCount = 0; @endphp
+                        @forelse($proforma->productos as $producto)
+                        @php
+                            $pivotPrecio = (float)($producto->pivot->precio_unitario ?? $producto->precio_lista);
+                            $pivotQty    = (int)($producto->pivot->cantidad ?? 1);
+                            $pivotDesc   = (float)($producto->pivot->descuento_cliente ?? 0);
+
+                            // Precio canónico en S/. para que JS pueda reconvertir al cambiar de moneda
+                            if ($proformaEsDolares && $ventaMasActual > 0) {
+                                // precio guardado está en USD → convertir de vuelta a S/.
+                                $precioSoles = $pivotPrecio * $ventaMasActual;
+                            } else {
+                                $precioSoles = $pivotPrecio;
+                            }
+
+                            $sub = $pivotPrecio * $pivotQty * (1 - $pivotDesc / 100);
+                        @endphp
+                        <tr id="producto-{{ $productoCount }}" data-precio-soles="{{ $precioSoles }}">
+                            <td>
+                                <span class="badge bg-info">{{ $producto->codigo_p }}</span>
+                                <input type="hidden" name="productos[{{ $productoCount }}][id]"
+                                       value="{{ $producto->id }}">
+                            </td>
+                            <td>
+                                <strong>{{ $producto->nombre }}</strong>
+                                <br><small class="text-muted">{{ $producto->marca }}</small>
+                            </td>
+                            <td>
+                                <input type="number"
+                                       name="productos[{{ $productoCount }}][cantidad]"
+                                       class="form-control form-control-sm cantidad-input"
+                                       value="{{ $pivotQty }}"
+                                       min="1" max="{{ $producto->stock }}"
+                                       data-stock="{{ $producto->stock }}" required
+                                       onchange="calcularSubtotal({{ $productoCount }})">
+                            </td>
+                            <td>
+                                <input type="number"
+                                       name="productos[{{ $productoCount }}][precio_unitario]"
+                                       class="form-control form-control-sm precio-input"
+                                       step="0.0001" min="0"
+                                       value="{{ number_format($pivotPrecio, 4, '.', '') }}" required
+                                       onchange="calcularSubtotal({{ $productoCount }})">
+                            </td>
+                            <td>
+                                <input type="number"
+                                       name="productos[{{ $productoCount }}][descuento_cliente]"
+                                       class="form-control form-control-sm descuento-input"
+                                       step="0.01" min="0"
+                                       max="{{ $producto->descuento ? $producto->descuento->porcentaje : 100 }}"
+                                       value="{{ $pivotDesc }}"
+                                       data-max-descuento="{{ $producto->descuento ? $producto->descuento->porcentaje : 100 }}"
+                                       onchange="validarDescuento({{ $productoCount }})">
+                            </td>
+                            <td>
+                                <span class="subtotal" id="subtotal-{{ $productoCount }}">
+                                    {{ $symActual }} {{ number_format($sub, 2) }}
+                                </span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="eliminarProducto({{ $productoCount }})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @php $productoCount++; @endphp
+                        @empty
+                        @endforelse
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-primary">
+                            <th colspan="5" class="text-end fw-bold">TOTAL:</th>
+                            <th id="totalGeneral" class="fw-bold fs-5">{{ $symActual }} 0.00</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- Configuración y Resumen -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <!-- Configuración -->
+                <div class="col-md-6">
+                    <label class="form-label fw-bold"><i class="bi bi-gear"></i> Configuración</label>
                     <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label"><i class="bi bi-gear"></i> Configuración</label>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="transaccion_id" class="form-label"><i class="bi bi-coin"></i> Transacción</label>
-                                    <select class="form-select" id="transaccion_id" name="transaccion_id">
-                                        <option value="">Seleccionar...</option>
-                                        @foreach($transacciones as $t)
-                                            <option value="{{ $t->id }}" {{ old('transaccion_id', $proforma->transaccion_id) == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="temperatura_id" class="form-label"><i class="bi bi-thermometer-sun"></i> Temperatura</label>
-                                    <select class="form-select" id="temperatura_id" name="temperatura_id">
-                                        <option value="">Seleccionar...</option>
-                                        @foreach($temperaturas as $t)
-                                            <option value="{{ $t->id }}" {{ old('temperatura_id', $proforma->temperatura_id) == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="estado_id" class="form-label"><i class="bi bi-flag"></i> Estado</label>
-                                    <select class="form-select" id="estado_id" name="estado_id">
-                                        <option value="">Seleccionar...</option>
-                                        @foreach($estados as $e)
-                                            <option value="{{ $e->id }}" {{ old('estado_id', $proforma->estado_id) == $e->id ? 'selected' : '' }}>{{ $e->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="bi bi-currency-dollar"></i> Moneda</label>
-                                <div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="moneda" id="monedaDolares" value="Dolares"
-                                            {{ old('moneda', $proforma->moneda) == 'Dolares' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="monedaDolares">Dólares ($)</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="moneda" id="monedaSoles" value="Soles"
-                                            {{ old('moneda', $proforma->moneda) == 'Soles' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="monedaSoles">Soles (S/.)</label>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="transaccion_id" class="form-label"><i class="bi bi-coin"></i> Transacción</label>
+                            <select class="form-select" id="transaccion_id" name="transaccion_id">
+                                <option value="">Seleccionar...</option>
+                                @foreach($transacciones as $t)
+                                    <option value="{{ $t->id }}"
+                                        {{ old('transaccion_id', $proforma->transaccion_id) == $t->id ? 'selected' : '' }}>
+                                        {{ $t->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label"><i class="bi bi-receipt"></i> Resumen</label>
-                            <div class="card bg-light p-3">
-                                <div class="mb-3">
-                                    <label class="form-label mb-1">Subtotal</label>
-                                    <input type="text" class="form-control form-control-lg" id="subtotal" readonly>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label mb-1">IGV (18%)</label>
-                                    <input type="text" class="form-control form-control-lg" id="igv" readonly>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label mb-1 fw-bold">TOTAL</label>
-                                    <input type="text" class="form-control form-control-lg fw-bold fs-3 text-success" id="totalResumen" readonly>
-                                </div>
-                                <input type="hidden" name="sub_total"  id="sub_total_hidden">
-                                <input type="hidden" name="monto_igv" id="monto_igv_hidden">
-                                <input type="hidden" name="total"      id="total_hidden">
+                        <div class="col-md-4 mb-3">
+                            <label for="temperatura_id" class="form-label"><i class="bi bi-thermometer-sun"></i> Temperatura</label>
+                            <select class="form-select" id="temperatura_id" name="temperatura_id">
+                                <option value="">Seleccionar...</option>
+                                @foreach($temperaturas as $t)
+                                    <option value="{{ $t->id }}"
+                                        {{ old('temperatura_id', $proforma->temperatura_id) == $t->id ? 'selected' : '' }}>
+                                        {{ $t->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="estado_id" class="form-label"><i class="bi bi-flag"></i> Estado</label>
+                            <select class="form-select" id="estado_id" name="estado_id">
+                                <option value="">Seleccionar...</option>
+                                @foreach($estados as $e)
+                                    <option value="{{ $e->id }}"
+                                        {{ old('estado_id', $proforma->estado_id) == $e->id ? 'selected' : '' }}>
+                                        {{ $e->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- ══ MONEDA ══════════════════════════════════════════ --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-currency-dollar"></i> Moneda
+                        </label>
+
+                        @if($tipoCambio && $tipoCambio->estado === 'ok')
+                            <div class="alert alert-info py-2 mb-2">
+                                <i class="bi bi-currency-exchange"></i>
+                                <strong>TC hoy {{ \Carbon\Carbon::parse($tipoCambio->fecha)->format('d/m/Y') }}:</strong>
+                                Venta+ = <strong class="text-primary">S/. {{ number_format($tipoCambio->venta_mas, 4) }}</strong>
+                                por $ 1 USD
+                                <small class="text-muted">
+                                    (venta {{ number_format($tipoCambio->venta, 4) }} + inc. {{ number_format($tipoCambio->incremento, 4) }})
+                                </small>
+                            </div>
+                        @else
+                            <div class="alert alert-warning py-2 mb-2">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Sin tipo de cambio para hoy — conversión USD no disponible.
+                            </div>
+                        @endif
+
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="moneda"
+                                       id="monedaSoles" value="Soles"
+                                       {{ old('moneda', $proforma->moneda) === 'Soles' ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold" for="monedaSoles">
+                                    <i class="bi bi-cash-coin text-success"></i> Soles (S/.)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="moneda"
+                                       id="monedaDolares" value="Dolares"
+                                       {{ old('moneda', $proforma->moneda) === 'Dolares' ? 'checked' : '' }}
+                                       @if(!($tipoCambio && $tipoCambio->estado === 'ok')) disabled @endif>
+                                <label class="form-check-label fw-bold" for="monedaDolares">
+                                    <i class="bi bi-currency-dollar text-success"></i> Dólares ($)
+                                    @if(!($tipoCambio && $tipoCambio->estado === 'ok'))
+                                        <span class="badge bg-secondary ms-1">No disponible</span>
+                                    @endif
+                                </label>
                             </div>
                         </div>
                     </div>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a href="{{ route('proformas.index') }}" class="btn btn-secondary me-md-2">
-                            <i class="bi bi-x-circle"></i> Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-check-circle"></i> Actualizar Proforma
-                        </button>
+                    {{-- ══ FIN MONEDA ══════════════════════════════════════ --}}
+                </div>
+
+                <!-- Resumen -->
+                <div class="col-md-6">
+                    <label class="form-label fw-bold"><i class="bi bi-receipt"></i> Resumen</label>
+                    <div class="card bg-light p-3">
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Subtotal</label>
+                            <input type="text" class="form-control form-control-lg" id="subtotal" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label mb-1">IGV (18%)</label>
+                            <input type="text" class="form-control form-control-lg" id="igv" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label mb-1 fw-bold">TOTAL</label>
+                            <input type="text" class="form-control form-control-lg fw-bold fs-3 text-success"
+                                   id="totalResumen" readonly>
+                        </div>
+                        <input type="hidden" name="sub_total"  id="sub_total_hidden">
+                        <input type="hidden" name="monto_igv" id="monto_igv_hidden">
+                        <input type="hidden" name="total"      id="total_hidden">
                     </div>
                 </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a href="{{ route('proformas.index') }}" class="btn btn-secondary me-md-2">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-check-circle"></i> Actualizar Proforma
+                </button>
             </div>
         </div>
     </div>
@@ -316,11 +361,15 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="text" id="buscarProducto" class="form-control mb-3" placeholder="Buscar por código o nombre...">
+                <input type="text" id="buscarProducto" class="form-control mb-3"
+                       placeholder="Buscar por código o nombre...">
                 <div class="table-responsive">
                     <table class="table table-hover" id="listaProductos">
                         <thead>
-                            <tr><th>Código</th><th>Descripción</th><th>Marca</th><th>Precio</th><th>Stock</th><th>Acción</th></tr>
+                            <tr>
+                                <th>Código</th><th>Descripción</th><th>Marca</th>
+                                <th>Precio (S/.)</th><th>Stock</th><th>Acción</th>
+                            </tr>
                         </thead>
                         <tbody>
                             @foreach($productos as $producto)
@@ -331,13 +380,14 @@
                                 <td>S/. {{ number_format($producto->precio_lista, 2) }}</td>
                                 <td>{{ $producto->stock }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-producto"
-                                        data-id="{{ $producto->id }}"
-                                        data-codigo="{{ $producto->codigo_p }}"
-                                        data-nombre="{{ $producto->nombre }}"
-                                        data-precio="{{ $producto->precio_lista }}"
-                                        data-stock="{{ $producto->stock }}"
-                                        data-descuento="{{ $producto->descuento ? $producto->descuento->porcentaje : 0 }}">
+                                    <button type="button"
+                                            class="btn btn-sm btn-success btn-seleccionar-producto"
+                                            data-id="{{ $producto->id }}"
+                                            data-codigo="{{ $producto->codigo_p }}"
+                                            data-nombre="{{ $producto->nombre }}"
+                                            data-precio="{{ $producto->precio_lista }}"
+                                            data-stock="{{ $producto->stock }}"
+                                            data-descuento="{{ $producto->descuento ? $producto->descuento->porcentaje : 0 }}">
                                         Seleccionar
                                     </button>
                                 </td>
@@ -357,44 +407,74 @@
 <script>
 $(document).ready(function () {
 
-    // ── Prevenir ENTER en inputs de productos ──────────────────────────────
-    $(document).on('keydown', '.cantidad-input, .precio-input, .descuento-input', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const index = $(this).closest('tr').attr('id').replace('producto-', '');
-            calcularSubtotal(index);
-            $(this).closest('td').next('td').find('input').focus();
-            return false;
-        }
+    // ══════════════════════════════════════════════════════════════════════
+    //  TIPO DE CAMBIO
+    // ══════════════════════════════════════════════════════════════════════
+    const VENTA_MAS = {{ ($tipoCambio && $tipoCambio->venta_mas && $tipoCambio->estado === 'ok') ? (float)$tipoCambio->venta_mas : 0 }};
+
+    const getMoneda  = () => document.querySelector('input[name="moneda"]:checked')?.value || 'Soles';
+    const getSimbolo = () => getMoneda() === 'Dolares' ? '$' : 'S/.';
+    const convertir  = s  => getMoneda() === 'Dolares' && VENTA_MAS > 0 ? s / VENTA_MAS : s;
+
+    function actualizarUI() {
+        const esDol  = getMoneda() === 'Dolares';
+        const badge  = document.getElementById('badgeMoneda');
+        badge.textContent = esDol ? '$ Dólares (USD)' : 'S/ Soles';
+        badge.className   = esDol ? 'badge bg-success ms-2' : 'badge bg-warning text-dark ms-2';
+    }
+
+    function reconvertirPrecios() {
+        document.querySelectorAll('#productosContainer tr[id^="producto-"]').forEach(row => {
+            const idx   = row.id.replace('producto-', '');
+            const base  = parseFloat(row.dataset.precioSoles || 0);
+            const input = row.querySelector(`input[name="productos[${idx}][precio_unitario]"]`);
+            if (input && base > 0) input.value = convertir(base).toFixed(4);
+            calcularSubtotal(idx);
+        });
+    }
+
+    // Cambio de moneda
+    document.querySelectorAll('input[name="moneda"]').forEach(r => {
+        r.addEventListener('change', function () {
+            if (this.value === 'Dolares' && VENTA_MAS <= 0) {
+                alert('No hay tipo de cambio disponible para hoy.\nConsulta el módulo Tipo de Cambio.');
+                document.getElementById('monedaSoles').checked = true;
+                return;
+            }
+            reconvertirPrecios();
+            actualizarUI();
+            calcularTotales();
+        });
     });
 
-    // ── SELECT2 CLIENTES ───────────────────────────────────────────────────
+    // ── Prevenir ENTER ────────────────────────────────────────────────────
+    $(document).on('keydown', '.cantidad-input,.precio-input,.descuento-input', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const idx = $(this).closest('tr').attr('id').replace('producto-', '');
+        calcularSubtotal(idx);
+        $(this).closest('td').next('td').find('input').focus();
+    });
+
+    // ── SELECT2 Clientes ──────────────────────────────────────────────────
     $('.select2-clientes').select2({
         placeholder: 'Buscar por RUC o Razón Social...',
         allowClear: true,
         ajax: {
             url: '{{ route("api.clientes.buscar") }}',
-            dataType: 'json',
-            delay: 250,
-            data: params => ({ q: params.term, page: params.page }),
-            processResults: data => ({ results: data.results }),
+            dataType: 'json', delay: 250,
+            data: p => ({ q: p.term, page: p.page }),
+            processResults: d => ({ results: d.results }),
             cache: true,
         },
         minimumInputLength: 2,
-        templateResult: formatCliente,
-        templateSelection: formatCliente,
+        templateResult:    c => !c.id ? c.text : (c.razon ? $(`<span>${c.razon}<br><small class="text-muted">RUC: ${c.ruc}</small></span>`) : $(`<span>${c.text}</span>`)),
+        templateSelection: c => !c.id ? c.text : (c.razon ? $(`<span>${c.razon}</span>`) : $(`<span>${c.text}</span>`)),
     });
 
-    function formatCliente(c) {
-        if (!c.id) return c.text;
-        if (c.razon) return $(`<span>${c.razon}<br><small class="text-muted">RUC: ${c.ruc}</small></span>`);
-        return $(`<span>${c.text}</span>`);
-    }
-
-    // ── CARGA DINÁMICA DE DIRECCIONES ─────────────────────────────────────
-    const API_DIR       = '{{ url("/api/clientes") }}';
-    // Valor guardado en la proforma (null → vacío, o ID de la dirección)
-    const savedDirId    = '{{ old("direccion_id", $proforma->direccion_id ?? "") }}';
+    // ── Direcciones ───────────────────────────────────────────────────────
+    const API_DIR    = '{{ url("/api/clientes") }}';
+    const savedDirId = '{{ old("direccion_id", $proforma->direccion_id ?? "") }}';
 
     function cargarDirecciones(clienteId, preselect) {
         const sel  = $('#direccion_id');
@@ -406,62 +486,60 @@ $(document).ready(function () {
         wrap.addClass('loading');
 
         $.getJSON(`${API_DIR}/${clienteId}/direcciones`)
-            .done(function (dirs) {
+            .done(dirs => {
                 sel.empty().append('<option value="">— Sin especificar —</option>');
-                dirs.forEach(d => {
-                    const selected = String(preselect) === String(d.id) ? 'selected' : '';
-                    sel.append(`<option value="${d.id}" ${selected}>${d.label}</option>`);
-                });
-                hint.text(`${dirs.length} dirección(es) disponible(s).`);
+                dirs.forEach(d => sel.append(
+                    `<option value="${d.id}" ${String(preselect)===String(d.id)?'selected':''}>${d.label}</option>`
+                ));
+                hint.text(dirs.length ? `${dirs.length} dirección(es) disponible(s).` : 'Sin direcciones.');
             })
-            .fail(function () {
+            .fail(() => {
                 sel.empty().append('<option value="">— Error al cargar —</option>');
                 hint.addClass('text-danger').text('No se pudieron cargar las direcciones.');
             })
             .always(() => wrap.removeClass('loading'));
     }
 
-    // Al cambiar el cliente, recargar direcciones
     $('#cliente_id').on('change', function () {
         const cid = $(this).val();
-        if (cid) {
-            cargarDirecciones(cid, '');   // al cambiar manualmente no preseleccionar
-        } else {
-            $('#direccion_id').empty().append('<option value="">— Seleccione un cliente primero —</option>');
-            $('#hintDireccion').text('');
-        }
+        cid ? cargarDirecciones(cid, '')
+            : $('#direccion_id').empty().append('<option value="">— Seleccione un cliente primero —</option>');
+        if (!cid) $('#hintDireccion').text('');
     });
 
-    // Al cargar la página: cargar las direcciones del cliente actual y preseleccionar
     @if($proforma->cliente_id)
     cargarDirecciones({{ $proforma->cliente_id }}, savedDirId);
     @else
     $('#direccion_id').empty().append('<option value="">— Seleccione un cliente primero —</option>');
     @endif
 
-    // ── GESTIÓN DE PRODUCTOS ───────────────────────────────────────────────
-    // IDs de productos ya cargados (para evitar duplicados desde modal)
+    // ══════════════════════════════════════════════════════════════════════
+    //  GESTIÓN DE PRODUCTOS
+    // ══════════════════════════════════════════════════════════════════════
     let productoCount = {{ $proforma->productos->count() }};
     let productosSeleccionados = [
         @foreach($proforma->productos as $p) '{{ $p->id }}', @endforeach
     ];
 
-    document.querySelectorAll('.btn-seleccionar-producto').forEach(button => {
-        button.addEventListener('click', function () {
-            const id     = this.dataset.id;
-            const codigo = this.dataset.codigo;
-            const nombre = this.dataset.nombre;
-            const precio = parseFloat(this.dataset.precio);
-            const stock  = parseInt(this.dataset.stock);
-            const desc   = parseFloat(this.dataset.descuento);
+    document.querySelectorAll('.btn-seleccionar-producto').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id          = this.dataset.id;
+            const codigo      = this.dataset.codigo;
+            const nombre      = this.dataset.nombre;
+            const precioSoles = parseFloat(this.dataset.precio);   // SIEMPRE en S/.
+            const stock       = parseInt(this.dataset.stock);
+            const desc        = parseFloat(this.dataset.descuento);
 
             if (productosSeleccionados.includes(id)) { alert('Este producto ya está en la lista'); return; }
 
             productoCount++;
             productosSeleccionados.push(id);
 
+            const precioMostrar = convertir(precioSoles);
+            const sym           = getSimbolo();
+
             document.getElementById('productosContainer').insertAdjacentHTML('beforeend', `
-                <tr id="producto-${productoCount}">
+                <tr id="producto-${productoCount}" data-precio-soles="${precioSoles}">
                     <td>
                         <span class="badge bg-info">${codigo}</span>
                         <input type="hidden" name="productos[${productoCount}][id]" value="${id}">
@@ -476,7 +554,7 @@ $(document).ready(function () {
                     <td>
                         <input type="number" name="productos[${productoCount}][precio_unitario]"
                                class="form-control form-control-sm precio-input"
-                               step="0.01" min="0" value="${precio.toFixed(2)}" required
+                               step="0.0001" min="0" value="${precioMostrar.toFixed(4)}" required
                                onchange="calcularSubtotal(${productoCount})">
                     </td>
                     <td>
@@ -487,67 +565,75 @@ $(document).ready(function () {
                                onchange="validarDescuento(${productoCount})"
                                placeholder="Máx: ${desc}%">
                     </td>
-                    <td><span class="subtotal" id="subtotal-${productoCount}">S/. ${precio.toFixed(2)}</span></td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarProducto(${productoCount})">
+                        <span class="subtotal" id="subtotal-${productoCount}">
+                            ${sym} ${precioMostrar.toFixed(2)}
+                        </span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger"
+                                onclick="eliminarProducto(${productoCount})">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
                 </tr>`);
+
             bootstrap.Modal.getInstance(document.getElementById('modalBuscarProducto')).hide();
             calcularTotales();
         });
     });
 
-    // Buscador modal
     document.getElementById('buscarProducto').addEventListener('keyup', function () {
-        const term = this.value.toLowerCase();
+        const t = this.value.toLowerCase();
         document.querySelectorAll('#listaProductos tbody tr').forEach(row => {
-            row.style.display = [...row.cells].slice(0, -1).some(c => c.textContent.toLowerCase().includes(term)) ? '' : 'none';
+            row.style.display = [...row.cells].slice(0,-1).some(c => c.textContent.toLowerCase().includes(t)) ? '' : 'none';
         });
     });
 
-    // Cálculos
-    window.calcularSubtotal = function (index) {
-        const qty   = parseFloat(document.querySelector(`input[name="productos[${index}][cantidad]"]`)?.value) || 0;
-        const price = parseFloat(document.querySelector(`input[name="productos[${index}][precio_unitario]"]`)?.value) || 0;
-        const disc  = parseFloat(document.querySelector(`input[name="productos[${index}][descuento_cliente]"]`)?.value) || 0;
-        const el    = document.getElementById(`subtotal-${index}`);
-        if (el) el.textContent = `S/. ${(qty * price * (1 - disc / 100)).toFixed(2)}`;
+    // ══════════════════════════════════════════════════════════════════════
+    //  CÁLCULOS
+    // ══════════════════════════════════════════════════════════════════════
+    window.calcularSubtotal = function (idx) {
+        const qty   = parseFloat(document.querySelector(`input[name="productos[${idx}][cantidad]"]`)?.value)          || 0;
+        const price = parseFloat(document.querySelector(`input[name="productos[${idx}][precio_unitario]"]`)?.value)   || 0;
+        const disc  = parseFloat(document.querySelector(`input[name="productos[${idx}][descuento_cliente]"]`)?.value) || 0;
+        const el    = document.getElementById(`subtotal-${idx}`);
+        if (el) el.textContent = `${getSimbolo()} ${(qty * price * (1 - disc/100)).toFixed(2)}`;
         calcularTotales();
     };
 
-    window.validarDescuento = function (index) {
-        const input = document.querySelector(`input[name="productos[${index}][descuento_cliente]"]`);
-        const max   = parseFloat(input?.dataset.maxDescuento) || 100;
-        if (parseFloat(input?.value) > max) { input.value = max; alert(`El descuento máximo es ${max}%`); }
-        calcularSubtotal(index);
+    window.validarDescuento = function (idx) {
+        const inp = document.querySelector(`input[name="productos[${idx}][descuento_cliente]"]`);
+        const max = parseFloat(inp?.dataset.maxDescuento) || 100;
+        if (parseFloat(inp?.value) > max) { inp.value = max; alert(`El descuento máximo es ${max}%`); }
+        calcularSubtotal(idx);
     };
 
-    window.eliminarProducto = function (index) {
-        const row = document.getElementById(`producto-${index}`);
-        if (row) {
-            const id = row.querySelector(`input[name="productos[${index}][id]"]`)?.value;
-            if (id) productosSeleccionados.splice(productosSeleccionados.indexOf(id), 1);
-            row.remove();
-            calcularTotales();
-        }
+    window.eliminarProducto = function (idx) {
+        const row = document.getElementById(`producto-${idx}`);
+        if (!row) return;
+        const id = row.querySelector(`input[name="productos[${idx}][id]"]`)?.value;
+        if (id) productosSeleccionados.splice(productosSeleccionados.indexOf(id), 1);
+        row.remove();
+        calcularTotales();
     };
 
     window.calcularTotales = function () {
+        const sym = getSimbolo();
         let sub = 0;
         document.querySelectorAll('.subtotal').forEach(el => {
-            const v = parseFloat(el.textContent.replace('S/. ', '').replace(',', ''));
+            const v = parseFloat(el.textContent.trim().replace(/^[^\d\-]+/, '').replace(',',''));
             if (!isNaN(v)) sub += v;
         });
         const igv = sub * 0.18, total = sub + igv;
-        document.getElementById('subtotal').value      = `S/. ${sub.toFixed(2)}`;
-        document.getElementById('igv').value           = `S/. ${igv.toFixed(2)}`;
-        document.getElementById('totalResumen').value  = `S/. ${total.toFixed(2)}`;
-        document.getElementById('totalGeneral').textContent = `S/. ${total.toFixed(2)}`;
-        document.getElementById('sub_total_hidden').value  = sub.toFixed(2);
-        document.getElementById('monto_igv_hidden').value  = igv.toFixed(2);
-        document.getElementById('total_hidden').value      = total.toFixed(2);
+
+        document.getElementById('subtotal').value           = `${sym} ${sub.toFixed(2)}`;
+        document.getElementById('igv').value                = `${sym} ${igv.toFixed(2)}`;
+        document.getElementById('totalResumen').value       = `${sym} ${total.toFixed(2)}`;
+        document.getElementById('totalGeneral').textContent = `${sym} ${total.toFixed(2)}`;
+        document.getElementById('sub_total_hidden').value   = sub.toFixed(2);
+        document.getElementById('monto_igv_hidden').value   = igv.toFixed(2);
+        document.getElementById('total_hidden').value       = total.toFixed(2);
     };
 
     document.getElementById('formProforma').addEventListener('submit', function (e) {
@@ -556,7 +642,8 @@ $(document).ready(function () {
         }
     });
 
-    // Calcular totales al cargar la página con productos existentes
+    // Init con estado actual de moneda
+    actualizarUI();
     calcularTotales();
 });
 </script>
