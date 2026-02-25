@@ -24,7 +24,8 @@ use App\Http\Controllers\ProformaEstadisticasController;
 use App\Http\Controllers\ApiExternaController;
 use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\ClienteBusquedaController;
-use App\Http\Controllers\ClienteDireccionesController; // ← nuevo
+use App\Http\Controllers\ClienteDireccionesController;
+use App\Http\Controllers\CambioController;              // ← NUEVO
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('distritos/{provincia_id}',     [UbigeoController::class, 'distritos'])->name('distritos');
     });
 
-    // ── Contactos (ruta fija antes del resource) ─────────────────────────────
+    // ── Contactos ────────────────────────────────────────────────────────────
     Route::get('contactos/buscar-dni/{dni}', [ContactoController::class, 'buscarPorDni'])
          ->name('contactos.buscar-dni');
 
@@ -60,33 +61,43 @@ Route::middleware(['auth'])->group(function () {
         Route::get('consultar-dni/{dni}', [ApiExternaController::class, 'consultarDni'])->name('api.consultar-dni');
     });
 
-    // ── Proformas (rutas fijas antes del resource) ───────────────────────────
+    // ── Proformas ─────────────────────────────────────────────────────────────
     Route::get('proformas/{proforma}/pdf',         [ProformaPDFController::class, 'generarPDF'])->name('proformas.pdf');
     Route::get('proformas/{proforma}/pdf/preview', [ProformaPDFController::class, 'previsualizarPDF'])->name('proformas.pdf.preview');
     Route::get('proformas/estadisticas',           [ProformaEstadisticasController::class, '__invoke'])->name('proformas.estadisticas');
 
-    // ── API Interna ──────────────────────────────────────────────────────────
+    // ── API Interna ───────────────────────────────────────────────────────────
     Route::prefix('api')->group(function () {
-        Route::get('clientes/buscar',             [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
-        Route::get('clientes/{id}',               [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
-        // ↓ NUEVA: devuelve todas las direcciones (principal + agencias) de un cliente
+        Route::get('clientes/buscar',               [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
+        Route::get('clientes/{id}',                 [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
         Route::get('clientes/{cliente}/direcciones', ClienteDireccionesController::class)->name('api.clientes.direcciones');
     });
 
-    // ── Resources ────────────────────────────────────────────────────────────
-    Route::resource('contactos',    ContactoController::class);
-    Route::resource('creditos',     CreditoController::class);
-    Route::resource('categorias',   CategoriaController::class);
-    Route::resource('direcciones',  DireccionController::class);
-    Route::resource('productos',    ProductoController::class);
-    Route::resource('descuentos',   DescuentoController::class);
-    Route::resource('proformas',    ProformaController::class);
-    Route::resource('clientes',     ClienteController::class);
+    // ── Tipo de Cambio ────────────────────────────────────────────────────────
+    Route::prefix('cambios')->name('cambios.')->group(function () {
+        Route::get('/',                              [CambioController::class, 'index'])->name('index');
+        Route::get('/{cambio}',                      [CambioController::class, 'show'])->name('show');
+        Route::get('/{cambio}/incremento',           [CambioController::class, 'editIncremento'])->name('edit-incremento');
+        Route::patch('/{cambio}/incremento',         [CambioController::class, 'updateIncremento'])->name('update-incremento');
+        Route::post('/consultar-hoy',                [CambioController::class, 'consultarHoy'])
+             ->name('consultar-hoy')
+             ->middleware('role:Administrador');
+    });
+
+    // ── Resources ─────────────────────────────────────────────────────────────
+    Route::resource('contactos',     ContactoController::class);
+    Route::resource('creditos',      CreditoController::class);
+    Route::resource('categorias',    CategoriaController::class);
+    Route::resource('direcciones',   DireccionController::class);
+    Route::resource('productos',     ProductoController::class);
+    Route::resource('descuentos',    DescuentoController::class);
+    Route::resource('proformas',     ProformaController::class);
+    Route::resource('clientes',      ClienteController::class);
     Route::resource('transacciones', TransaccionController::class)->parameters(['transacciones' => 'transaccion']);
-    Route::resource('temperaturas', TemperaturaController::class);
-    Route::resource('estados',      EstadoController::class);
-    Route::resource('virtuals',     VirtualController::class);
-    Route::resource('proveedores',  ProveedorController::class);
+    Route::resource('temperaturas',  TemperaturaController::class);
+    Route::resource('estados',       EstadoController::class);
+    Route::resource('virtuals',      VirtualController::class);
+    Route::resource('proveedores',   ProveedorController::class);
 
     Route::middleware(['role:Administrador'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
@@ -97,6 +108,7 @@ Route::middleware(['auth'])->group(function () {
     //Route::middleware(['role:Administrador|Vendedor'])->group(function () {
         // ...
     //});
+
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

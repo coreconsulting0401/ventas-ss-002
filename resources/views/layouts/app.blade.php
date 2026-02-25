@@ -523,6 +523,15 @@
                 </li>
                 @endcan
 
+                {{-- Tipo de Cambio --}}
+                <li class="nav-item">
+                    <a href="{{ route('cambios.index') }}"
+                       class="nav-link {{ request()->routeIs('cambios.*') ? 'active' : '' }}">
+                        <i class="bi bi-currency-exchange"></i>
+                        <span>Tipo de Cambio</span>
+                    </a>
+                </li>
+
                 <!-- productos virtuales -->
                 @can('view virtuals')
 
