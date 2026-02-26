@@ -17,6 +17,9 @@
     .select2-results__option { padding: 6px 12px; }
     #wrapDireccion { transition: opacity .25s; }
     #wrapDireccion.loading { opacity: .5; pointer-events: none; }
+    #wrapContacto { transition: opacity .25s; }
+    #wrapContacto.loading { opacity: .5; pointer-events: none; }
+    #cardContactoInfo { display: none; }
 </style>
 @endpush
 
@@ -62,6 +65,42 @@
                         <option value="">— Seleccione un cliente primero —</option>
                     </select>
                     <small class="text-muted" id="hintDireccion"></small>
+                </div>
+
+                {{-- ── Contacto solicitante ─────────────────────────────── --}}
+                <div class="col-md-6 mb-3" id="wrapContacto">
+                    <label for="contacto_id" class="form-label">
+                        <i class="bi bi-person-badge"></i> Contacto solicitante
+                    </label>
+                    <select class="form-select @error('contacto_id') is-invalid @enderror"
+                            id="contacto_id" name="contacto_id">
+                        <option value="">— Seleccione un cliente primero —</option>
+                    </select>
+                    <small class="text-muted" id="hintContacto"></small>
+                    @error('contacto_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                {{-- ── Mini-card de datos del contacto seleccionado ──────── --}}
+                <div class="col-md-6 mb-3">
+                    <div id="cardContactoInfo" class="card border-info">
+                        <div class="card-body py-2 px-3">
+                            <h6 class="card-title text-info mb-1">
+                                <i class="bi bi-person-check-fill"></i>
+                                <span id="contactoNombre"></span>
+                            </h6>
+                            <div class="row g-1 small">
+                                <div class="col-12 col-md-6 text-muted">
+                                    <i class="bi bi-briefcase"></i> <span id="contactoCargo"></span>
+                                </div>
+                                <div class="col-12 col-md-6 text-muted">
+                                    <i class="bi bi-telephone"></i> <span id="contactoTelefono"></span>
+                                </div>
+                                <div class="col-12 text-muted">
+                                    <i class="bi bi-envelope"></i> <span id="contactoEmail"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -434,8 +473,74 @@ $(document).ready(function () {
             .always(() => wrap.removeClass('loading'));
     });
 
+    // ── Contactos ─────────────────────────────────────────────────────────
+    const oldContact = '{{ old("contacto_id") }}';
+
+    function cargarContactos(cid, preselect) {
+        const sel  = $('#contacto_id');
+        const hint = $('#hintContacto');
+        const wrap = $('#wrapContacto');
+        const card = document.getElementById('cardContactoInfo');
+
+        sel.empty().append('<option value="">— Cargando... —</option>');
+        hint.text('').removeClass('text-danger');
+        wrap.addClass('loading');
+        card.style.display = 'none';
+
+        $.getJSON(`${API_DIR}/${cid}/contactos`)
+            .done(contacts => {
+                sel.empty().append('<option value="">— Sin especificar —</option>');
+                if (contacts.length) {
+                    contacts.forEach(c => sel.append(
+                        `<option value="${c.id}"
+                                 data-nombre="${c.nombre_completo}"
+                                 data-cargo="${c.cargo ?? ''}"
+                                 data-telefono="${c.telefono ?? ''}"
+                                 data-email="${c.email ?? ''}"
+                                 ${String(preselect) === String(c.id) ? 'selected' : ''}>${c.label}</option>`
+                    ));
+                    hint.text(`${contacts.length} contacto(s) disponible(s).`);
+                    if (preselect) mostrarInfoContacto(sel);
+                } else {
+                    hint.text('Este cliente no tiene contactos registrados.');
+                }
+            })
+            .fail(() => {
+                sel.empty().append('<option value="">— Error —</option>');
+                hint.addClass('text-danger').text('No se pudieron cargar los contactos.');
+            })
+            .always(() => wrap.removeClass('loading'));
+    }
+
+    function mostrarInfoContacto(sel) {
+        const opt  = sel.find('option:selected');
+        const card = document.getElementById('cardContactoInfo');
+        if (!opt.val()) { card.style.display = 'none'; return; }
+        document.getElementById('contactoNombre').textContent   = opt.data('nombre')   || '—';
+        document.getElementById('contactoCargo').textContent    = opt.data('cargo')    || '—';
+        document.getElementById('contactoTelefono').textContent = opt.data('telefono') || '—';
+        document.getElementById('contactoEmail').textContent    = opt.data('email')    || '—';
+        card.style.display = 'block';
+    }
+
+    $('#contacto_id').on('change', function () { mostrarInfoContacto($(this)); });
+
+    // Al cambiar cliente: recargar ambos (direcciones via .on('change') ya registrado arriba
+    // + contactos)
+    $('#cliente_id').on('change', function () {
+        const cid = $(this).val();
+        // Reset contacto
+        $('#contacto_id').empty().append('<option value="">— Seleccione un cliente primero —</option>');
+        $('#hintContacto').text('');
+        document.getElementById('cardContactoInfo').style.display = 'none';
+        if (cid) cargarContactos(cid, '');
+    });
+
     @if(old('cliente_id'))
-    setTimeout(() => $('#cliente_id').trigger('change'), 600);
+    setTimeout(() => {
+        $('#cliente_id').trigger('change');
+        cargarContactos('{{ old("cliente_id") }}', '{{ old("contacto_id") }}');
+    }, 600);
     @endif
 
     // ══════════════════════════════════════════════════════════════════════

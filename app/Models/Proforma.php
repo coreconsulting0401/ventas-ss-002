@@ -18,7 +18,7 @@ class Proforma extends Model
     use HasFactory;
 
     protected $fillable = [
-        'codigo', 'cliente_id', 'direccion_id', 'user_id',
+        'codigo', 'cliente_id', 'direccion_id', 'contacto_id', 'user_id',
         'transaccion_id', 'temperatura_id', 'estado_id',
         'nota', 'orden', 'fecha_creacion', 'fecha_fin',
         'moneda', 'sub_total', 'monto_igv', 'total',
@@ -55,12 +55,13 @@ class Proforma extends Model
 
     // ── Relaciones ───────────────────────────────────────────────────────────
 
-    public function cliente(): BelongsTo   { return $this->belongsTo(Cliente::class); }
-    public function direccion(): BelongsTo { return $this->belongsTo(Direccion::class); }
-    public function user(): BelongsTo      { return $this->belongsTo(User::class); }
+    public function cliente(): BelongsTo     { return $this->belongsTo(Cliente::class); }
+    public function direccion(): BelongsTo   { return $this->belongsTo(Direccion::class); }
+    public function contacto(): BelongsTo    { return $this->belongsTo(Contacto::class); }
+    public function user(): BelongsTo        { return $this->belongsTo(User::class); }
     public function transaccion(): BelongsTo { return $this->belongsTo(Transaccion::class); }
     public function temperatura(): BelongsTo { return $this->belongsTo(Temperatura::class); }
-    public function estado(): BelongsTo    { return $this->belongsTo(Estado::class); }
+    public function estado(): BelongsTo      { return $this->belongsTo(Estado::class); }
 
     public function productos(): BelongsToMany
     {

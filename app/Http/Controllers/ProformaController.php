@@ -2,6 +2,8 @@
 /**
  * CONTROLADOR: ProformaController.php
  * Ubicación: app/Http/Controllers/ProformaController.php
+ *
+ * CAMBIO: se agregó 'contacto' al eager-loading en index(), show() y edit()
  */
 namespace App\Http\Controllers;
 
@@ -49,7 +51,8 @@ class ProformaController extends Controller
         if ($request->filled('fecha_fin_desde'))      $query->where('fecha_fin','>=',$request->fecha_fin_desde);
         if ($request->filled('fecha_fin_hasta'))      $query->where('fecha_fin','<=',$request->fecha_fin_hasta);
 
-        $proformas = $query->with(['cliente','direccion','user','transaccion','temperatura','estado'])
+        // ── contacto agregado al eager-load ───────────────────────────────
+        $proformas = $query->with(['cliente','direccion','contacto','user','transaccion','temperatura','estado'])
                            ->latest()->paginate(15)->withQueryString();
 
         return view('proformas.index', [
@@ -63,19 +66,15 @@ class ProformaController extends Controller
 
     public function create()
     {
-        // ── Tipo de cambio del día (S/ → USD) ─────────────────────────────
         $tipoCambio = Cambio::hoy();
 
         return view('proformas.create', [
-
-            // NO cargar todos los clientes (ahora es dinámico)
-            // $clientes = Cliente::all(); // <-- Eliminar esta línea
             'productos'     => Producto::where('stock','>',0)->get(),
             'virtuals'      => Virtual::where('stock','>',0)->get(),
             'transacciones' => Transaccion::all(),
             'temperaturas'  => Temperatura::all(),
             'estados'       => Estado::all(),
-            'tipoCambio'    => $tipoCambio,   // ← NUEVO
+            'tipoCambio'    => $tipoCambio,
         ]);
     }
 
@@ -87,7 +86,6 @@ class ProformaController extends Controller
             $data            = $request->validated();
             $data['user_id'] = Auth::id();
 
-            // Convertir "principal" → null (la dirección principal no está en la tabla direccions)
             if (isset($data['direccion_id']) && $data['direccion_id'] === 'principal') {
                 $data['direccion_id'] = null;
             }
@@ -119,9 +117,11 @@ class ProformaController extends Controller
 
     public function show(Proforma $proforma)
     {
+        // ── contacto agregado al eager-load ───────────────────────────────
         $proforma->load([
             'cliente',
             'direccion.distrito.provincia.departamento',
+            'contacto',
             'user','transaccion','temperatura','estado',
             'productos' => fn($q) => $q->with('descuento'),
         ]);
@@ -130,21 +130,19 @@ class ProformaController extends Controller
 
     public function edit(Proforma $proforma)
     {
-        $proforma->load(['productos' => fn($q) => $q->with('descuento'), 'cliente', 'direccion']);
+        // ── contacto agregado al eager-load ───────────────────────────────
+        $proforma->load(['productos' => fn($q) => $q->with('descuento'), 'cliente', 'direccion', 'contacto']);
 
-        // ── Tipo de cambio del día (S/ → USD) ─────────────────────────────
         $tipoCambio = Cambio::hoy();
 
         return view('proformas.edit', [
-            // NO cargar todos los clientes (ahora es dinámico)
-            // $clientes = Cliente::all(); // <-- Eliminar esta línea
             'proforma'      => $proforma,
             'productos'     => Producto::where('stock','>',0)->get(),
             'virtuals'      => Virtual::where('stock','>',0)->get(),
             'transacciones' => Transaccion::all(),
             'temperaturas'  => Temperatura::all(),
             'estados'       => Estado::all(),
-            'tipoCambio'    => $tipoCambio,   // ← NUEVO
+            'tipoCambio'    => $tipoCambio,
         ]);
     }
 

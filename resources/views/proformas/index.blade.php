@@ -169,6 +169,7 @@
                     <tr>
                         <th>N° Cotización</th><th>Cliente</th>
                         <th>Dirección entrega</th>
+                        <th>Contacto</th>
                         <th>Usuario</th>
                         <th>Fecha Creación</th><th>Fecha Fin</th><th>Estado</th>
                         <th>Temperatura</th><th>Total</th>
@@ -196,6 +197,18 @@
                                 <br><small class="badge bg-light text-secondary border">Principal</small>
                             @else
                                 <span class="badge bg-secondary">—</span>
+                            @endif
+                        </td>
+                        {{-- Contacto solicitante --}}
+                        <td>
+                            @if($proforma->contacto)
+                                <span class="fw-semibold small">
+                                    {{ $proforma->contacto->nombre }}
+                                    {{ $proforma->contacto->apellido_paterno }}
+                                </span><br>
+                                <small class="text-muted">{{ $proforma->contacto->cargo ?? '' }}</small>
+                            @else
+                                <span class="text-muted small">—</span>
                             @endif
                         </td>
                         <td>
@@ -242,7 +255,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="text-center py-5">
+                        <td colspan="11" class="text-center py-5">
                             <i class="bi bi-inbox" style="font-size:3rem;color:#ccc;"></i>
                             <p class="mt-2 text-muted">No se encontraron proformas</p>
                             @if($hayFiltros)

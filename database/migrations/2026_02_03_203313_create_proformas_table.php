@@ -15,20 +15,27 @@ return new class extends Migration
             $table->id();
             $table->uuid('codigo')->unique();
 
+            // --- Relaciones Principales ---
             $table->foreignId('cliente_id')
                   ->constrained('clientes')
                   ->onDelete('cascade');
 
-            // ✅ NUEVO CAMPO integrado
             $table->foreignId('direccion_id')
                   ->nullable()
-                  ->constrained('direccions')
+                  ->constrained('direccions') // Asegúrate que la tabla se llame 'direccions' o 'direcciones'
+                  ->nullOnDelete();
+
+            // ✅ Campo integrado desde la segunda migración
+            $table->foreignId('contacto_id')
+                  ->nullable()
+                  ->constrained('contactos')
                   ->nullOnDelete();
 
             $table->foreignId('user_id')
                   ->constrained('users')
                   ->onDelete('cascade');
 
+            // --- Relaciones de Parámetros ---
             $table->foreignId('transaccion_id')
                   ->nullable()
                   ->constrained('transaccions')
@@ -44,6 +51,7 @@ return new class extends Migration
                   ->constrained('estados')
                   ->onDelete('set null');
 
+            // --- Datos de la Proforma ---
             $table->string('nota', 200)->nullable();
             $table->string('orden', 20)->nullable();
             $table->string('moneda', 20)->default('Soles');

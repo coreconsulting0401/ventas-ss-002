@@ -25,6 +25,7 @@ use App\Http\Controllers\ApiExternaController;
 use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\ClienteBusquedaController;
 use App\Http\Controllers\ClienteDireccionesController;
+use App\Http\Controllers\ClienteContactosController;   // ← NUEVO
 use App\Http\Controllers\CambioController;
 use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\EmpresaController;
@@ -70,27 +71,26 @@ Route::middleware(['auth'])->group(function () {
 
     // ── API Interna ───────────────────────────────────────────────────────────
     Route::prefix('api')->group(function () {
-        Route::get('clientes/buscar',               [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
-        Route::get('clientes/{id}',                 [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
+        Route::get('clientes/buscar',                [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
+        Route::get('clientes/{id}',                  [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
         Route::get('clientes/{cliente}/direcciones', ClienteDireccionesController::class)->name('api.clientes.direcciones');
+        Route::get('clientes/{cliente}/contactos',   ClienteContactosController::class)->name('api.clientes.contactos');  // ← NUEVO
     });
 
     // ── Tipo de Cambio ────────────────────────────────────────────────────────
     Route::prefix('cambios')->name('cambios.')->group(function () {
-        Route::get('/',                              [CambioController::class, 'index'])->name('index');
-        Route::get('/{cambio}',                      [CambioController::class, 'show'])->name('show');
-        Route::get('/{cambio}/incremento',           [CambioController::class, 'editIncremento'])->name('edit-incremento');
-        Route::patch('/{cambio}/incremento',         [CambioController::class, 'updateIncremento'])->name('update-incremento');
-        Route::post('/consultar-hoy',                [CambioController::class, 'consultarHoy'])
+        Route::get('/',                   [CambioController::class, 'index'])->name('index');
+        Route::get('/{cambio}',           [CambioController::class, 'show'])->name('show');
+        Route::get('/{cambio}/incremento',[CambioController::class, 'editIncremento'])->name('edit-incremento');
+        Route::patch('/{cambio}/incremento',[CambioController::class, 'updateIncremento'])->name('update-incremento');
+        Route::post('/consultar-hoy',     [CambioController::class, 'consultarHoy'])
              ->name('consultar-hoy')
              ->middleware('role:Administrador');
     });
 
     // ── Importación de Productos ─────────────────────────────────────────────
-    // Rutas de importación masiva Excel
     Route::get('/productos/import/template', [ProductoImportController::class, 'downloadTemplate'])
         ->name('productos.import.template');
-
     Route::post('/productos/import', [ProductoImportController::class, 'import'])
         ->name('productos.import');
 
@@ -114,7 +114,6 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('roles', \App\Http\Controllers\RoleController::class);
     });
 
-
     // ── Empresa (Solo un registro) ────────────────────────────────────────────
     Route::middleware(['role:Administrador'])->prefix('empresa')->name('empresas.')->group(function () {
         Route::get('/', [EmpresaController::class, 'index'])->name('index');
@@ -129,6 +128,7 @@ Route::middleware(['auth'])->group(function () {
     //Route::middleware(['role:Administrador|Vendedor'])->group(function () {
         // ...
     //});
+
 
 });
 

@@ -80,6 +80,33 @@
                     </div>
                 </div>
 
+                <!-- Contacto solicitante -->
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong><i class="bi bi-person-badge"></i> Contacto:</strong></div>
+                    <div class="col-md-8">
+                        @if($proforma->contacto)
+                            <div class="card border-info d-inline-block px-3 py-2" style="min-width:220px;">
+                                <div class="fw-semibold text-info">
+                                    {{ $proforma->contacto->nombre }}
+                                    {{ $proforma->contacto->apellido_paterno }}
+                                    {{ $proforma->contacto->apellido_materno }}
+                                </div>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-briefcase"></i> {{ $proforma->contacto->cargo ?? '—' }}
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-telephone"></i> {{ $proforma->contacto->telefono ?? '—' }}
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-envelope"></i> {{ $proforma->contacto->email ?? '—' }}
+                                </small>
+                            </div>
+                        @else
+                            <span class="badge bg-secondary">Sin contacto asignado</span>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="row mb-3">
                     <div class="col-md-4"><strong>Nota:</strong></div>
                     <div class="col-md-8">{{ $proforma->nota ?? 'Sin nota' }}</div>
