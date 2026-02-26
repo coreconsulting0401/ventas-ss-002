@@ -98,6 +98,25 @@
                         @enderror
                     </div>
 
+                    {{-- Teléfono --}}
+                    <div class="mb-3">
+                        <label for="telefono_user" class="form-label">
+                            <i class="bi bi-telephone"></i> Teléfono
+                        </label>
+                        <input type="text"
+                               class="form-control @error('telefono_user') is-invalid @enderror"
+                               id="telefono_user"
+                               name="telefono_user"
+                               value="{{ old('telefono_user', $user->telefono_user) }}"
+                               maxlength="14"
+                               inputmode="numeric"
+                               placeholder="Ej: 51987654321">
+                        <small class="text-muted">Solo números, máximo 14 dígitos</small>
+                        @error('telefono_user')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- Cambiar Contraseña --}}
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i>
@@ -252,6 +271,11 @@ function togglePassword(inputId) {
 
 // Solo números en DNI
 document.getElementById('dni').addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+
+// Solo números en teléfono
+document.getElementById('telefono_user').addEventListener('input', function() {
     this.value = this.value.replace(/[^0-9]/g, '');
 });
 

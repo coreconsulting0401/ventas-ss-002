@@ -164,7 +164,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover table-striped mb-0">
-                <thead class="table-dark">
+                <thead class="table-light">
                     <tr>
                         <th class="text-center" style="width:50px">ID</th>
                         <th>RUC</th>
@@ -273,6 +273,8 @@
                                    class="btn btn-warning btn-sm" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+
+                                @haspermission('delete clientes')
                                 <form action="{{ route('clientes.destroy', $cliente) }}"
                                       method="POST" class="d-inline"
                                       onsubmit="return confirm('¿Eliminar este cliente?')">
@@ -281,6 +283,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endhaspermission
                             </div>
                         </td>
                     </tr>
@@ -328,13 +331,20 @@
     <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
         <div class="modal-content">
 
-            {{-- Header --}}
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="tituloEstadisticas">
-                    <i class="bi bi-bar-chart-line me-2"></i>
-                    Estadísticas de Clientes
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            {{-- Header del modal --}}
+
+            <div class="modal-header text-white border-0"
+                 style="background:linear-gradient(135deg,#6c5dd3,#4f8ef7);padding:1.25rem 1.5rem;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:42px;height:42px;background:rgba(255,255,255,.2);border-radius:10px;
+                                display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-bar-chart-line-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold">Estadísticas de Clientes</h5>
+                        <div id="estRangoLabel" class="opacity-75" style="font-size:.78rem;"></div>
+                    </div>
+                </div>
             </div>
 
             {{-- Filtro de fechas del modal --}}

@@ -223,11 +223,14 @@
                                    title="Ver detalles">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                @haspermission('edit productos')
                                 <a href="{{ route('productos.edit', $producto->id) }}"
                                    class="btn btn-sm btn-warning"
                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                @endhaspermission
+                                @haspermission('delete productos')
                                 <form action="{{ route('productos.destroy', $producto->id) }}"
                                       method="POST"
                                       class="d-inline"
@@ -238,6 +241,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endhaspermission
                             </div>
                         </td>
                     </tr>

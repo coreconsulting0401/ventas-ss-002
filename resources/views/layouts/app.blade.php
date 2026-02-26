@@ -523,6 +523,7 @@
                 </li>
                 @endcan
 
+                @haspermission('view cambios')
                 {{-- Tipo de Cambio --}}
                 <li class="nav-item">
                     <a href="{{ route('cambios.index') }}"
@@ -531,6 +532,7 @@
                         <span>Tipo de Cambio</span>
                     </a>
                 </li>
+                @endhaspermission
 
                 <!-- productos virtuales -->
                 @can('view virtuals')
@@ -559,7 +561,7 @@
                 -->
                 @endcan
 
-                @role('Administrador')
+
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="bi bi-gear"></i>
@@ -567,40 +569,47 @@
                     </a>
                 </li>
 
+                @haspermission('view categorias')
                 <li class="nav-item ms-3">
                     <a href="{{ route('categorias.index') }}" class="nav-link {{ request()->routeIs('categorias.*') ? 'active' : '' }}">
                         <i class="bi bi-tag"></i>
                         <span>Categorías</span>
                     </a>
                 </li>
-
+                @endhaspermission
+                @haspermission('view estados')
                 <li class="nav-item ms-3">
                     <a href="{{ route('estados.index') }}" class="nav-link {{ request()->routeIs('estados.*') ? 'active' : '' }}">
                         <i class="bi bi-flag"></i>
                         <span>Estados</span>
                     </a>
                 </li>
-
+                @endhaspermission
+                @haspermission('view transacciones')
                 <li class="nav-item ms-3">
                     <a href="{{ route('transacciones.index') }}" class="nav-link {{ request()->routeIs('transacciones.*') ? 'active' : '' }}">
                         <i class="bi bi-coin"></i>
                         <span>Transacciones</span>
                     </a>
                 </li>
-
+                @endhaspermission
+                @haspermission('view temperaturas')
                 <li class="nav-item ms-3">
                     <a href="{{ route('temperaturas.index') }}" class="nav-link {{ request()->routeIs('temperaturas.*') ? 'active' : '' }}">
                         <i class="bi bi-thermometer-sun"></i>
                         <span>Temperaturas</span>
                     </a>
                 </li>
+                @endhaspermission
 
+                @haspermission('view descuentos')
                 <li class="nav-item ms-3">
                     <a href="{{ route('descuentos.index') }}" class="nav-link {{ request()->routeIs('descuentos.*') ? 'active' : '' }}">
                         <i class="bi bi-percent"></i>
                         <span>Descuentos</span>
                     </a>
                 </li>
+                @endhaspermission
 
                 <!-- creditos por el momento no necesita vistas de configuracion
 
@@ -619,6 +628,8 @@
                     </a>
                 </li>
 
+
+                @haspermission('view users')
                 <li class="nav-item ms-3">
                     <a href="{{ route('users.index') }}"
                     class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
@@ -626,7 +637,9 @@
                         <span>Usuarios</span>
                     </a>
                 </li>
+                @endhaspermission
 
+                @haspermission('view roles')
                 <li class="nav-item ms-3">
                     <a href="{{ route('roles.index') }}"
                     class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
@@ -634,9 +647,9 @@
                         <span>Roles</span>
                     </a>
                 </li>
-                @endrole
+                @endhaspermission
 
-                @role('Administrador')
+                @haspermission('view empresas')
                 <li class="nav-item">
                     <a href="{{ route('empresas.index') }}"
                     class="nav-link {{ request()->routeIs('empresas.*') ? 'active' : '' }}">
@@ -644,7 +657,7 @@
                         <span>Empresa</span>
                     </a>
                 </li>
-                @endrole
+                @endhaspermission
             </ul>
         </div>
     </div>

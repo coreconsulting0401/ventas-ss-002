@@ -244,12 +244,15 @@
                                 <a href="{{ route('proformas.show',$proforma->id) }}" class="btn btn-info" title="Ver"><i class="bi bi-eye"></i></a>
                                 <a href="{{ route('proformas.pdf',$proforma->id) }}" class="btn btn-primary" title="PDF" target="_blank"><i class="bi bi-file-pdf"></i></a>
                                 <a href="{{ route('proformas.edit',$proforma->id) }}" class="btn btn-warning" title="Editar"><i class="bi bi-pencil"></i></a>
+
+                                @haspermission('delete proformas')
                                 <button type="button" class="btn btn-danger" title="Eliminar"
                                         data-del-url="{{ route('proformas.destroy',$proforma->id) }}"
                                         data-del-token="{{ csrf_token() }}"
                                         onclick="eliminarProforma(this)">
                                     <i class="bi bi-trash"></i>
                                 </button>
+                                @endhaspermission
                             </div>
                         </td>
                     </tr>

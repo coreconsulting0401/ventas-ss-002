@@ -8,9 +8,11 @@
         <i class="bi bi-thermometer-sun"></i> Detalle de Temperatura
     </h2>
     <div class="btn-group">
+        @haspermission('edit temperaturas')
         <a href="{{ route('temperaturas.edit', $temperatura) }}" class="btn btn-warning">
             <i class="bi bi-pencil"></i> Editar
         </a>
+        @endhaspermission
         <a href="{{ route('temperaturas.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
@@ -97,6 +99,8 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
+
+                    @haspermission('delete temperaturas')
                     <form action="{{ route('temperaturas.destroy', $temperatura) }}"
                           method="POST"
                           class="d-inline"
@@ -107,6 +111,7 @@
                             <i class="bi bi-trash"></i> Eliminar Temperatura
                         </button>
                     </form>
+                    @endhaspermission
                     <a href="{{ route('temperaturas.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>
@@ -200,12 +205,12 @@
                     <i class="bi bi-lightbulb"></i>
                     <strong>Tip:</strong> Las temperaturas se utilizan para clasificar las proformas segun la probalidad de exito de concretar la pósterior venta.
                 </div>
-
+                @haspermission('delete temperaturas')
                 <div class="alert alert-info">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Importante:</strong> Al eliminar una temperatura, todas las proformas asociadas perderán su clasificación de temperatura.
                 </div>
-
+                @endhaspermission
                 <div class="mt-3">
                     <h6 class="mb-2">Datos de la Temperatura:</h6>
                     <ul class="list-unstyled small">

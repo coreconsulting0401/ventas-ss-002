@@ -101,6 +101,7 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
+                    @haspermission('delete contactos')
                     <form action="{{ route('contactos.destroy', $contacto) }}"
                           method="POST"
                           class="d-inline"
@@ -111,6 +112,7 @@
                             <i class="bi bi-trash"></i> Eliminar Contacto
                         </button>
                     </form>
+                    @endhaspermission
                     <a href="{{ route('contactos.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>
@@ -199,10 +201,12 @@
                     <strong>Tip:</strong> Los contactos pueden estar asociados a múltiples clientes y viceversa.
                 </div>
 
+                @haspermission('delete contactos')
                 <div class="alert alert-info">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Importante:</strong> Al eliminar un contacto, se eliminará su relación con todos los clientes asociados.
                 </div>
+                @endhaspermission
 
                 <div class="mt-3">
                     <h6 class="mb-2">Datos del Contacto:</h6>

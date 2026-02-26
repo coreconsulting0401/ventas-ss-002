@@ -7,7 +7,7 @@
     <h2>
         <i class="bi bi-currency-exchange"></i> Tipo de Cambio USD / PEN
     </h2>
-    @role('Administrador')
+    @hasanyrole('Administrador|Gerente')
     <form action="{{ route('cambios.consultar-hoy') }}" method="POST" class="d-inline"
           onsubmit="return confirm('¿Ejecutar consulta manual a la API SUNAT ahora?');">
         @csrf
@@ -15,7 +15,7 @@
             <i class="bi bi-cloud-download"></i> Consultar Hoy Manualmente
         </button>
     </form>
-    @endrole
+    @endhasanyrole
 </div>
 @endsection
 
@@ -66,9 +66,9 @@
     <div class="alert alert-warning d-flex align-items-center mb-4">
         <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
         <div>No hay tipo de cambio registrado para hoy.
-            @role('Administrador')
+            @hasanyrole('Administrador|Gerente')
                 Usa el botón <strong>"Consultar Hoy Manualmente"</strong> para obtenerlo ahora.
-            @endrole
+            @endhasanyrole
         </div>
     </div>
 @endif
@@ -194,14 +194,18 @@
                         </td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
+                                @haspermission('show cambios')
                                 <a href="{{ route('cambios.show', $cambio) }}"
                                    class="btn btn-info" title="Ver detalle">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                @endhaspermission
+                                @haspermission('edit cambios')
                                 <a href="{{ route('cambios.edit-incremento', $cambio) }}"
                                    class="btn btn-warning" title="Ajustar incremento">
                                     <i class="bi bi-sliders"></i>
                                 </a>
+                                @endhaspermission
                             </div>
                         </td>
                     </tr>

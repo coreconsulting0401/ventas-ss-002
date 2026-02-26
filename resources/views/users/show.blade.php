@@ -92,6 +92,20 @@
                     </tr>
                     <tr>
                         <td class="text-muted">
+                            <i class="bi bi-telephone"></i> Teléfono
+                        </td>
+                        <td>
+                            @if($user->telefono_user)
+                                <a href="tel:{{ $user->telefono_user }}" class="text-decoration-none">
+                                    {{ $user->telefono_user }}
+                                </a>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">
                             <i class="bi bi-calendar-plus"></i> Creado
                         </td>
                         <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>

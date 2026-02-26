@@ -8,9 +8,11 @@
         <i class="bi bi-tag"></i> Detalle de Categoría
     </h2>
     <div class="btn-group">
+        @haspermission('edit categorias')
         <a href="{{ route('categorias.edit', $categoria) }}" class="btn btn-warning">
             <i class="bi bi-pencil"></i> Editar
         </a>
+        @endhaspermission
         <a href="{{ route('categorias.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
@@ -70,6 +72,7 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
+                    @haspermission('delete categorias')
                     <form action="{{ route('categorias.destroy', $categoria) }}"
                           method="POST"
                           class="d-inline"
@@ -80,6 +83,8 @@
                             <i class="bi bi-trash"></i> Eliminar Categoría
                         </button>
                     </form>
+                    @endhaspermission
+
                     <a href="{{ route('categorias.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>
@@ -106,11 +111,12 @@
                     <i class="bi bi-lightbulb"></i>
                     <strong>Tip:</strong> Las categorías ayudan a organizar y clasificar a los clientes en el sistema.
                 </div>
-
+                @haspermission('delete categorias')
                 <div class="alert alert-info">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Importante:</strong> Al eliminar una categoría, se perderá la relación con los productos asociados.
                 </div>
+                @endhaspermission
             </div>
         </div>
     </div>

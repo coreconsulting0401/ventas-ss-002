@@ -36,6 +36,7 @@ class User extends Authenticatable
         'password',
         'dni',
         'codigo',
+        'telefono_user',
     ];
 
     /**

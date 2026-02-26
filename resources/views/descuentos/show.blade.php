@@ -97,6 +97,7 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
+                    @haspermission('delete descuentos')
                     <form action="{{ route('descuentos.destroy', $descuento->id) }}"
                           method="POST"
                           class="d-inline"
@@ -107,6 +108,7 @@
                             <i class="bi bi-trash"></i> Eliminar Descuento
                         </button>
                     </form>
+                    @endhaspermission
                     <a href="{{ route('descuentos.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>

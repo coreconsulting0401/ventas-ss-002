@@ -8,14 +8,18 @@
         <i class="bi bi-currency-exchange"></i>
         Tipo de Cambio — {{ \Carbon\Carbon::parse($cambio->fecha)->format('d/m/Y') }}
     </h2>
+
     <div class="btn-group">
+        @haspermission('edit cambios')
         <a href="{{ route('cambios.edit-incremento', $cambio) }}" class="btn btn-warning">
             <i class="bi bi-sliders"></i> Ajustar Incremento
         </a>
+        @endhaspermission
         <a href="{{ route('cambios.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
     </div>
+
 </div>
 @endsection
 
@@ -112,11 +116,13 @@
                 <div class="row mb-3">
                     <div class="col-4">
                         <strong>Incremento</strong>
+                        @haspermission('edit cambios')
                         <a href="{{ route('cambios.edit-incremento', $cambio) }}"
                            class="btn btn-xs btn-outline-warning btn-sm ms-2"
                            title="Editar incremento">
                             <i class="bi bi-pencil"></i>
                         </a>
+                        @endhaspermission
                     </div>
                     <div class="col-8">
                         <span class="badge bg-warning text-dark fs-6">
@@ -207,11 +213,13 @@
                     <li><i class="bi bi-check-circle text-primary"></i> <strong>Venta+:</strong> S/. {{ $cambio->venta_mas ? number_format($cambio->venta_mas, 4) : 'N/A' }}</li>
                 </ul>
             </div>
+            @haspermission('edit cambios')
             <div class="card-footer">
                 <a href="{{ route('cambios.edit-incremento', $cambio) }}" class="btn btn-warning w-100">
                     <i class="bi bi-sliders"></i> Editar Incremento
                 </a>
             </div>
+            @endhaspermission
         </div>
 
         <div class="card shadow-sm mt-3">

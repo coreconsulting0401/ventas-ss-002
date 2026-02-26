@@ -133,6 +133,8 @@
                     </div>
                 </div>
             </div>
+
+            @haspermission('delete clientes')
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
                     <form action="{{ route('clientes.destroy', $cliente) }}"
@@ -150,6 +152,7 @@
                     </a>
                 </div>
             </div>
+            @endhaspermission
         </div>
 
         <!-- Sección de Contactos -->
@@ -328,12 +331,12 @@
                     <i class="bi bi-lightbulb"></i>
                     <strong>Tip:</strong> Los clientes pueden tener múltiples contactos y direcciones para mejor organización.
                 </div>
-
+                @haspermission('delete clientes')
                 <div class="alert alert-info">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Importante:</strong> Al eliminar un cliente, se eliminarán todas sus direcciones adicionales y proformas asociadas.
                 </div>
-
+                @endhaspermission
                 <div class="mt-3">
                     <h6 class="mb-2">Resumen del Cliente:</h6>
                     <ul class="list-unstyled small">

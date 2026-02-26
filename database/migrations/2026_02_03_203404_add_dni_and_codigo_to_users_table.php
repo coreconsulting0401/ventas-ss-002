@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('dni', 8)->unique()->after('id');
             $table->string('codigo')->unique()->after('dni');
+            $table->string('telefono_user', 15)->nullable()->after('codigo');
+
         });
     }
 
@@ -23,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['dni', 'codigo']);
+            $table->dropColumn(['dni', 'codigo','telefono_user']);
         });
     }
 };

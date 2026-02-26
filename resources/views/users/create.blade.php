@@ -99,8 +99,26 @@
                         @enderror
                     </div>
 
+                    {{-- Teléfono --}}
+                    <div class="mb-3">
+                        <label for="telefono_user" class="form-label">
+                            <i class="bi bi-telephone"></i> Teléfono
+                        </label>
+                        <input type="text"
+                               class="form-control @error('telefono_user') is-invalid @enderror"
+                               id="telefono_user"
+                               name="telefono_user"
+                               value="{{ old('telefono_user') }}"
+                               maxlength="14"
+                               inputmode="numeric"
+                               placeholder="Ej: 51987654321">
+                        <small class="text-muted">Solo números, máximo 14 dígitos</small>
+                        @error('telefono_user')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="row">
-                        {{-- Password --}}
                         <div class="col-md-6 mb-3">
                             <label for="password" class="form-label">
                                 <i class="bi bi-key"></i> Contraseña <span class="text-danger">*</span>
@@ -207,7 +225,7 @@
 </form>
 
 {{-- Datos para JavaScript --}}
-<div id="js-data" 
+<div id="js-data"
      data-next-user-id="{{ \App\Models\User::max('id') + 1 }}"
      style="display:none;">
 </div>
@@ -225,17 +243,17 @@ const nextUserId = document.getElementById('js-data').dataset.nextUserId;
 function generarCodigo() {
     const rolesChecked = document.querySelectorAll('.role-checkbox:checked');
     const codigoInput = document.getElementById('codigo');
-    
+
     if (rolesChecked.length === 0) {
         codigoInput.value = '';
         return;
     }
-    
+
     const primerRol = rolesChecked[0].dataset.roleName;
     const prefijo = primerRol.substring(0, 3).toUpperCase();
     const idFormateado = String(nextUserId).padStart(3, '0');
     const codigo = `${prefijo}-${idFormateado}`;
-    
+
     codigoInput.value = codigo;
     codigoInput.classList.add('border-success');
     setTimeout(() => codigoInput.classList.remove('border-success'), 1000);
@@ -260,6 +278,10 @@ document.getElementById('dni').addEventListener('input', function() {
     this.value = this.value.replace(/[^0-9]/g, '');
 });
 
+document.getElementById('telefono_user').addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+
 document.getElementById('formUser').addEventListener('submit', function(e) {
     const rolesChecked = document.querySelectorAll('input[name="roles[]"]:checked');
 
@@ -277,7 +299,7 @@ document.getElementById('formUser').addEventListener('submit', function(e) {
         alert('Las contraseñas no coinciden');
         return false;
     }
-    
+
     const codigo = document.getElementById('codigo').value;
     if (!codigo) {
         e.preventDefault();

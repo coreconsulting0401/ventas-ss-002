@@ -87,6 +87,7 @@
                         <th>Usuario</th>
                         <th>Email</th>
                         <th>DNI</th>
+                        <th>Teléfono</th>
                         <th>Roles</th>
                         <th>Proformas</th>
                         <th class="text-center" style="width:180px;">Acciones</th>
@@ -108,6 +109,7 @@
                         </td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->dni }}</td>
+                        <td>{{ $user->telefono_user ?? '—' }}</td>
                         <td>
                             @forelse($user->roles as $role)
                                 <span class="badge
@@ -156,7 +158,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-5">
+                        <td colspan="8" class="text-center py-5">
                             <i class="bi bi-people" style="font-size:3rem;color:#ccc;"></i>
                             <p class="mt-2 text-muted">No se encontraron usuarios</p>
                         </td>

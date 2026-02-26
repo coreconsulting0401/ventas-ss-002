@@ -53,16 +53,19 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'dni' => 'required|string|size:8|unique:users,dni',
-            'email' => 'required|email|unique:users,email',
+            'name'     => 'required|string|max:255',
+            'dni'      => 'required|string|size:8|unique:users,dni',
+            'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'codigo' => 'nullable|string|unique:users,codigo',
-            'roles' => 'required|array|min:1',
-            'roles.*' => 'exists:roles,name',
+            'codigo'   => 'nullable|string|unique:users,codigo',
+            'telefono_user' => 'nullable|string|regex:/^[0-9]+$/|max:14',
+            'roles'    => 'required|array|min:1',
+            'roles.*'  => 'exists:roles,name',
         ], [
-            'roles.required' => 'Debe asignar al menos un rol al usuario',
-            'roles.min' => 'Debe asignar al menos un rol al usuario',
+            'roles.required'         => 'Debe asignar al menos un rol al usuario',
+            'roles.min'              => 'Debe asignar al menos un rol al usuario',
+            'telefono_user.regex'    => 'El teléfono solo puede contener números',
+            'telefono_user.max'      => 'El teléfono no puede superar los 14 dígitos',
         ]);
 
         // Generar código automático si no se proporciona
@@ -73,11 +76,12 @@ class UserController extends Controller
         }
 
         $user = User::create([
-            'name' => $validated['name'],
-            'dni' => $validated['dni'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'codigo' => $validated['codigo'],
+            'name'          => $validated['name'],
+            'dni'           => $validated['dni'],
+            'email'         => $validated['email'],
+            'password'      => Hash::make($validated['password']),
+            'codigo'        => $validated['codigo'],
+            'telefono_user' => $validated['telefono_user'] ?? null,
         ]);
 
         // Asignar roles
@@ -112,23 +116,27 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'dni' => 'required|string|size:8|unique:users,dni,' . $user->id,
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'name'     => 'required|string|max:255',
+            'dni'      => 'required|string|size:8|unique:users,dni,' . $user->id,
+            'email'    => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'codigo' => 'nullable|string|unique:users,codigo,' . $user->id,
-            'roles' => 'required|array|min:1',
-            'roles.*' => 'exists:roles,name',
+            'codigo'   => 'nullable|string|unique:users,codigo,' . $user->id,
+            'telefono_user' => 'nullable|string|regex:/^[0-9]+$/|max:14',
+            'roles'    => 'required|array|min:1',
+            'roles.*'  => 'exists:roles,name',
         ], [
-            'roles.required' => 'Debe asignar al menos un rol al usuario',
-            'roles.min' => 'Debe asignar al menos un rol al usuario',
+            'roles.required'         => 'Debe asignar al menos un rol al usuario',
+            'roles.min'              => 'Debe asignar al menos un rol al usuario',
+            'telefono_user.regex'    => 'El teléfono solo puede contener números',
+            'telefono_user.max'      => 'El teléfono no puede superar los 14 dígitos',
         ]);
 
         $user->update([
-            'name' => $validated['name'],
-            'dni' => $validated['dni'],
-            'email' => $validated['email'],
-            'codigo' => $validated['codigo'],
+            'name'          => $validated['name'],
+            'dni'           => $validated['dni'],
+            'email'         => $validated['email'],
+            'codigo'        => $validated['codigo'],
+            'telefono_user' => $validated['telefono_user'] ?? null,
         ]);
 
         // Solo actualizar password si se proporciona

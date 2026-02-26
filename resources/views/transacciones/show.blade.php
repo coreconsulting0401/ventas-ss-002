@@ -8,9 +8,11 @@
         <i class="bi bi-coin"></i> Detalle de Transacción
     </h2>
     <div class="btn-group">
+        @haspermission('edit transacciones')
         <a href="{{ route('transacciones.edit', $transaccion) }}" class="btn btn-warning">
             <i class="bi bi-pencil"></i> Editar
         </a>
+        @endhaspermission
         <a href="{{ route('transacciones.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
@@ -97,6 +99,8 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
+
+                    @haspermission('delete transacciones')
                     <form action="{{ route('transacciones.destroy', $transaccion) }}"
                           method="POST"
                           class="d-inline"
@@ -107,6 +111,7 @@
                             <i class="bi bi-trash"></i> Eliminar Transacción
                         </button>
                     </form>
+                    @endhaspermission
                     <a href="{{ route('transacciones.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>
@@ -200,12 +205,12 @@
                     <i class="bi bi-lightbulb"></i>
                     <strong>Tip:</strong> Las transacciones ayudan a clasificar el método de pago o tipo de transacción en las proformas.
                 </div>
-
+                @haspermission('delete transacciones')
                 <div class="alert alert-info">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Importante:</strong> Al eliminar una transacción, todas las proformas asociadas perderán su clasificación de transacción.
                 </div>
-
+                @endhaspermission
                 <div class="mt-3">
                     <h6 class="mb-2">Datos de la Transacción:</h6>
                     <ul class="list-unstyled small">

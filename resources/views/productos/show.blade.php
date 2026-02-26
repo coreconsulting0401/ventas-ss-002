@@ -8,9 +8,11 @@
         <i class="bi bi-box-seam"></i> Detalle de Producto
     </h2>
     <div class="btn-group">
+        @haspermission('edit productos')
         <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-warning">
             <i class="bi bi-pencil"></i> Editar
         </a>
+        @endhaspermission
         <a href="{{ route('productos.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
@@ -158,6 +160,8 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
+
+                    @haspermission('delete productos')
                     <form action="{{ route('productos.destroy', $producto->id) }}"
                           method="POST"
                           class="d-inline"
@@ -168,6 +172,7 @@
                             <i class="bi bi-trash"></i> Eliminar Producto
                         </button>
                     </form>
+                    @endhaspermission
                     <a href="{{ route('productos.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>
@@ -267,12 +272,12 @@
                     <i class="bi bi-lightbulb"></i>
                     <strong>Tip:</strong> Los productos son los artículos que se incluyen en las proformas para los clientes.
                 </div>
-
+                @haspermission('delete productos')
                 <div class="alert alert-info">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Importante:</strong> Al eliminar un producto, se eliminará de todas las proformas donde esté incluido.
                 </div>
-
+                @endhaspermission
                 <div class="mt-3">
                     <h6 class="mb-2">Datos del Producto:</h6>
                     <ul class="list-unstyled small">

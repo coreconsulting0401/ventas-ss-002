@@ -76,11 +76,14 @@
                                    title="Ver detalles">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                @haspermission('edit temperaturas')
                                 <a href="{{ route('temperaturas.edit', $temperatura) }}"
                                    class="btn btn-sm btn-warning"
                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                @endhaspermission
+                                @haspermission('delete temperaturas')
                                 <form action="{{ route('temperaturas.destroy', $temperatura) }}"
                                       method="POST"
                                       class="d-inline"
@@ -91,6 +94,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endhaspermission
                             </div>
                         </td>
                     </tr>

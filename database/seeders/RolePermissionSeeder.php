@@ -53,13 +53,14 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Crear roles
-        $adminRole = Role::create(['name' => 'Administrador']);
+        $AdminRole = Role::create(['name' => 'Administrador']);
+        $GerenteRole = Role::create(['name' => 'Gerente']);
         $vendedorRole = Role::create(['name' => 'Vendedor']);
         $almacenRole = Role::create(['name' => 'Almacén']);
-        $visualizadorRole = Role::create(['name' => 'Visualizador']);
+
 
         // Administrador: TODOS los permisos
-        $adminRole->givePermissionTo(Permission::all());
+        $AdminRole->givePermissionTo(Permission::all());
 
         // Vendedor: gestión de clientes, contactos y proformas
         $vendedorPermissions = [
@@ -81,22 +82,54 @@ class RolePermissionSeeder extends Seeder
         ];
         $almacenRole->givePermissionTo($almacenPermissions);
 
-        // Visualizador: solo ver todo
-        $visualizadorPermissions = Permission::where('name', 'like', 'view%')->pluck('name');
-        $visualizadorRole->givePermissionTo($visualizadorPermissions);
+        // Gerente: solo ver todo
+        $GerentePermissions = [
+            //todos los permisos pra cada modulo menos el permiso delete
+
+            'view contactos','create contactos','edit contactos',
+            'view clientes', 'create clientes', 'edit clientes',
+            'view proformas', 'create proformas', 'edit proformas',
+            'view productos','create productos','edit productos',
+             //'view virtuals','create virtuals','edit virtuals',
+             //'view proveedores','create proveedores','edit proveedores',
+            'view descuentos','create descuentos','edit descuentos',
+            'view transacciones', 'create transacciones', 'edit transacciones',
+            'view temperaturas', 'create temperaturas', 'edit temperaturas',
+            'view estados', 'create estados', 'edit estados',
+            'view categorias', 'create categorias', 'edit categorias',
+            'view direcciones', 'create direcciones', 'edit direcciones',
+            'view users', 'create users', 'edit users',
+            'view roles', //'create roles', 'edit roles',
+            'view cambios', 'create cambios', 'edit cambios', 'delete cambios',
+            //'view empresas',  'edit empresas',
+            'view creditos', 'create creditos', 'edit creditos', 'delete creditos',
+        ];
+
+        $GerenteRole->givePermissionTo($GerentePermissions);
 
         // Crear usuarios de ejemplo
-        $admin = User::create([
-            'name' => 'Administrador Sistema',
-            'dni' => '12345678',
-            'email' => 'admin@proformas.com',
-            'password' => Hash::make('password'),
+        $Admin = User::create([
+            'name' => 'Luis Alberto Cusy Ricci',
+            'dni' => '42969452',
+            'email' => 'dacluis7@gmail.com',
+            'password' => Hash::make('Luis1313155'),
             'codigo' => 'ADM-001',
         ]);
-        $admin->assignRole('Administrador');
+        $Admin->assignRole('Administrador');
+
+        // Crear usuarios de ejemplo
+        $gerente = User::create([
+            'name' => 'Juan J. Gerente',
+            'dni' => '12345678',
+            'email' => 'gerente@proformas.com',
+            'password' => Hash::make('password'),
+            'codigo' => 'GER-001',
+        ]);
+        $gerente->assignRole('Gerente');
+
 
         $vendedor = User::create([
-            'name' => 'Juan Vendedor',
+            'name' => 'Juan J.Vendedor',
             'dni' => '87654321',
             'email' => 'vendedor@proformas.com',
             'password' => Hash::make('password'),
@@ -105,7 +138,7 @@ class RolePermissionSeeder extends Seeder
         $vendedor->assignRole('Vendedor');
 
         $almacenero = User::create([
-            'name' => 'Pedro Almacén',
+            'name' => 'Pedro P.Almacén',
             'dni' => '11223344',
             'email' => 'almacen@proformas.com',
             'password' => Hash::make('password'),
@@ -114,7 +147,8 @@ class RolePermissionSeeder extends Seeder
         $almacenero->assignRole('Almacén');
 
         $this->command->info('✅ Roles y permisos creados exitosamente!');
-        $this->command->info('📧 Usuario Admin: admin@proformas.com / password');
+        $this->command->info('📧 Usuario Administrador del sistema: dacluis7@gmail.com / Luis1313155');
+        $this->command->info('📧 Usuario Gerente: gerente@proformas.com / password');
         $this->command->info('📧 Usuario Vendedor: vendedor@proformas.com / password');
         $this->command->info('📧 Usuario Almacén: almacen@proformas.com / password');
     }

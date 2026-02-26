@@ -135,10 +135,11 @@
                             @endif
                             -->
 
-                            <!-- Información de usuarios de prueba -->
+                            <!-- Información de usuarios de prueba (actulizar) -->
                             <div class="info-badge">
                                 <h6><i class="bi bi-info-circle"></i> Usuarios de Prueba</h6>
-                                <p><strong>Admin:</strong> admin@proformas.com / password</p>
+                                <p><strong>Administrador del sistema:</strong> dacluis7@gmail.com / Luis1313155</p>
+                                <p><strong>Gerente:</strong> gerente@proformas.com / password</p>
                                 <p><strong>Vendedor:</strong> vendedor@proformas.com / password</p>
                                 <p><strong>Almacén:</strong> almacen@proformas.com / password</p>
                             </div>

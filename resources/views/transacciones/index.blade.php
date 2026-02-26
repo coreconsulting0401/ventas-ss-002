@@ -76,11 +76,14 @@
                                    title="Ver detalles">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                @haspermission('edit transacciones')
                                 <a href="{{ route('transacciones.edit', $transaccion) }}"
                                    class="btn btn-sm btn-warning"
                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                @endhaspermission
+                                @haspermission('delete transacciones')
                                 <form action="{{ route('transacciones.destroy', $transaccion) }}"
                                       method="POST"
                                       class="d-inline"
@@ -91,6 +94,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endhaspermission
                             </div>
                         </td>
                     </tr>

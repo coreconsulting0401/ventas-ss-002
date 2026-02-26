@@ -100,6 +100,7 @@
                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                @haspermission('delete contactos')
                                 <form action="{{ route('contactos.destroy', $contacto) }}"
                                       method="POST"
                                       class="d-inline"
@@ -110,6 +111,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endhaspermission
                             </div>
                         </td>
                     </tr>

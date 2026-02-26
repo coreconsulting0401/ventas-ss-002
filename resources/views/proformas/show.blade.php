@@ -240,6 +240,7 @@
                     <a href="{{ route('proformas.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>
+                    @haspermission('delete proformas')
                     <form action="{{ route('proformas.destroy', $proforma->id) }}"
                           method="POST"
                           onsubmit="return confirm('¿Está seguro de eliminar esta proforma?');">
@@ -249,6 +250,7 @@
                             <i class="bi bi-trash"></i> Eliminar Proforma
                         </button>
                     </form>
+                    @endhaspermission
                 </div>
             </div>
         </div>

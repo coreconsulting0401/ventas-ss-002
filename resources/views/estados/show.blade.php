@@ -8,9 +8,11 @@
         <i class="bi bi-flag"></i> Detalle de Estado
     </h2>
     <div class="btn-group">
+        @haspermission('edit estados')
         <a href="{{ route('estados.edit', $estado) }}" class="btn btn-warning">
             <i class="bi bi-pencil"></i> Editar
         </a>
+        @endhaspermission
         <a href="{{ route('estados.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
@@ -97,6 +99,8 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
+
+                    @haspermission('delete estados')
                     <form action="{{ route('estados.destroy', $estado) }}"
                           method="POST"
                           class="d-inline"
@@ -107,6 +111,7 @@
                             <i class="bi bi-trash"></i> Eliminar Estado
                         </button>
                     </form>
+                    @endhaspermission
                     <a href="{{ route('estados.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Listado
                     </a>
@@ -201,11 +206,12 @@
                     <strong>Tip:</strong> Los estados ayudan a clasificar y organizar las proformas según su situación actual.
                 </div>
 
+                @haspermission('delete estados')
                 <div class="alert alert-info">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Importante:</strong> Al eliminar un estado, todas las proformas asociadas perderán su estado actual.
                 </div>
-
+                @endhaspermission
                 <div class="mt-3">
                     <h6 class="mb-2">Datos del Estado:</h6>
                     <ul class="list-unstyled small">
