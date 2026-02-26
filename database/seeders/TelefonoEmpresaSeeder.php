@@ -13,7 +13,7 @@ class TelefonoEmpresaSeeder extends Seeder
             [
                 'id' => 1,
                 'empresa_id' => 1,
-                'area' => 'Oficina Principal Callao',
+                'area' => 'Oficina Principal',
                 'telefono' => '4511052',
                 'descripcion' => 'Oficina principal',
                 'activo' => true
@@ -21,7 +21,7 @@ class TelefonoEmpresaSeeder extends Seeder
             [
                 'id' => 2,
                 'empresa_id' => 1,
-                'area' => 'Oficina Principal Callao 1',
+                'area' => 'Oficina Principal',
                 'telefono' => '4514787',
                 'descripcion' => 'Oficina principal',
                 'activo' => true
