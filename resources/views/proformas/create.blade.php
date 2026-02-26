@@ -584,8 +584,9 @@ $(document).ready(function () {
                     <td>
                         <input type="number" name="productos[${productoCount}][precio_unitario]"
                                class="form-control form-control-sm precio-input"
-                               step="0.0001" min="0" value="${precioMostrar.toFixed(4)}" required
-                               onchange="calcularSubtotal(${productoCount})">
+                               step="0.0001" min="0" value="${precioMostrar.toFixed(4)}" required readonly
+                               onchange="calcularSubtotal(${productoCount})"
+                               >
                     </td>
                     <td>
                         <input type="number" name="productos[${productoCount}][descuento_cliente]"

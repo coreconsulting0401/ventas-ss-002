@@ -39,17 +39,17 @@ return new class extends Migration
             $table->foreignId('transaccion_id')
                   ->nullable()
                   ->constrained('transaccions')
-                  ->onDelete('set null');
+                  ->onDelete('set null')->default(1);
 
             $table->foreignId('temperatura_id')
                   ->nullable()
                   ->constrained('temperaturas')
-                  ->onDelete('set null');
+                  ->onDelete('set null')->default(1);
 
             $table->foreignId('estado_id')
                   ->nullable()
                   ->constrained('estados')
-                  ->onDelete('set null');
+                  ->onDelete('set null')->default(1);
 
             // --- Datos de la Proforma ---
             $table->string('nota', 200)->nullable();

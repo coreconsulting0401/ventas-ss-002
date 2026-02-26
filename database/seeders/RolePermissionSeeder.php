@@ -35,8 +35,8 @@ class RolePermissionSeeder extends Seeder
             'transacciones',
             'temperaturas',
             'estados',
-            'virtuals',
-            'proveedores',
+            //'virtuals',
+            //'proveedores',
             'users',
             'roles',
             'cambios',
@@ -66,7 +66,7 @@ class RolePermissionSeeder extends Seeder
             'view contactos', 'create contactos', 'edit contactos',
             'view clientes', 'create clientes', 'edit clientes',
             'view proformas', 'create proformas', 'edit proformas',
-            'view productos', 'view virtuals',
+            'view productos', //'view virtuals',
             'view transacciones', 'view temperaturas', 'view estados',
             'view categorias', 'view direcciones',
         ];
@@ -75,8 +75,8 @@ class RolePermissionSeeder extends Seeder
         // Almacén: gestión de productos, virtuals y proveedores
         $almacenPermissions = [
             'view productos', 'create productos', 'edit productos', 'delete productos',
-            'view virtuals', 'create virtuals', 'edit virtuals', 'delete virtuals',
-            'view proveedores', 'create proveedores', 'edit proveedores', 'delete proveedores',
+            //'view virtuals', 'create virtuals', 'edit virtuals', 'delete virtuals',
+            //'view proveedores', 'create proveedores', 'edit proveedores', 'delete proveedores',
             'view descuentos', 'create descuentos', 'edit descuentos',
         ];
         $almacenRole->givePermissionTo($almacenPermissions);

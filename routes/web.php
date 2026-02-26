@@ -25,7 +25,7 @@ use App\Http\Controllers\ApiExternaController;
 use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\ClienteBusquedaController;
 use App\Http\Controllers\ClienteDireccionesController;
-use App\Http\Controllers\ClienteContactosController;   // ← NUEVO
+use App\Http\Controllers\ClienteContactosController;
 use App\Http\Controllers\CambioController;
 use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\EmpresaController;
@@ -54,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('contactos/buscar-dni/{dni}', [ContactoController::class, 'buscarPorDni'])
          ->name('contactos.buscar-dni');
 
-    // ── Clientes ─────────────────────────────────────────────────────────────
+    // ── Clientes (rutas especiales ANTES del resource) ────────────────────────
     Route::get('clientes/verificar-ruc/{ruc}', [ClienteController::class, 'verificarRuc'])
          ->name('clientes.verificar-ruc');
 
@@ -71,19 +71,23 @@ Route::middleware(['auth'])->group(function () {
 
     // ── API Interna ───────────────────────────────────────────────────────────
     Route::prefix('api')->group(function () {
-        Route::get('clientes/buscar',                [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
-        Route::get('clientes/{id}',                  [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
-        Route::get('clientes/{cliente}/direcciones', ClienteDireccionesController::class)->name('api.clientes.direcciones');
-        Route::get('clientes/{cliente}/contactos',   ClienteContactosController::class)->name('api.clientes.contactos');  // ← NUEVO
+        Route::get('clientes/buscar',                   [ClienteBusquedaController::class, 'buscar'])->name('api.clientes.buscar');
+        Route::get('clientes/{id}/obtener',             [ClienteBusquedaController::class, 'obtener'])->name('api.clientes.obtener');
+        Route::get('clientes/{cliente}/direcciones',    ClienteDireccionesController::class)->name('api.clientes.direcciones');
+        Route::get('clientes/{cliente}/contactos',      ClienteContactosController::class)->name('api.clientes.contactos');
+
+        // ── Estadísticas de clientes (para modal con gráficos) ────────────
+        Route::get('clientes/estadisticas', [ClienteController::class, 'estadisticasClientes'])
+             ->name('api.clientes.estadisticas');
     });
 
     // ── Tipo de Cambio ────────────────────────────────────────────────────────
     Route::prefix('cambios')->name('cambios.')->group(function () {
-        Route::get('/',                   [CambioController::class, 'index'])->name('index');
-        Route::get('/{cambio}',           [CambioController::class, 'show'])->name('show');
-        Route::get('/{cambio}/incremento',[CambioController::class, 'editIncremento'])->name('edit-incremento');
+        Route::get('/',                    [CambioController::class, 'index'])->name('index');
+        Route::get('/{cambio}',            [CambioController::class, 'show'])->name('show');
+        Route::get('/{cambio}/incremento', [CambioController::class, 'editIncremento'])->name('edit-incremento');
         Route::patch('/{cambio}/incremento',[CambioController::class, 'updateIncremento'])->name('update-incremento');
-        Route::post('/consultar-hoy',     [CambioController::class, 'consultarHoy'])
+        Route::post('/consultar-hoy',      [CambioController::class, 'consultarHoy'])
              ->name('consultar-hoy')
              ->middleware('role:Administrador');
     });
@@ -116,19 +120,18 @@ Route::middleware(['auth'])->group(function () {
 
     // ── Empresa (Solo un registro) ────────────────────────────────────────────
     Route::middleware(['role:Administrador'])->prefix('empresa')->name('empresas.')->group(function () {
-        Route::get('/', [EmpresaController::class, 'index'])->name('index');
-        Route::get('/crear', [EmpresaController::class, 'create'])->name('create');
-        Route::post('/crear', [EmpresaController::class, 'store'])->name('store');
+        Route::get('/',              [EmpresaController::class, 'index'])->name('index');
+        Route::get('/crear',         [EmpresaController::class, 'create'])->name('create');
+        Route::post('/crear',        [EmpresaController::class, 'store'])->name('store');
         Route::get('/{empresa}/editar', [EmpresaController::class, 'edit'])->name('edit');
-        Route::put('/{empresa}', [EmpresaController::class, 'update'])->name('update');
-        Route::delete('/{empresa}', [EmpresaController::class, 'destroy'])->name('destroy');
+        Route::put('/{empresa}',     [EmpresaController::class, 'update'])->name('update');
+        Route::delete('/{empresa}',  [EmpresaController::class, 'destroy'])->name('destroy');
     });
 
     // Múltiples roles
     //Route::middleware(['role:Administrador|Vendedor'])->group(function () {
         // ...
     //});
-
 
 });
 

@@ -219,7 +219,7 @@
                                        name="productos[{{ $productoCount }}][precio_unitario]"
                                        class="form-control form-control-sm precio-input"
                                        step="0.0001" min="0"
-                                       value="{{ number_format($pivotPrecio, 4, '.', '') }}" required
+                                       value="{{ number_format($pivotPrecio, 4, '.', '') }}" readonly
                                        onchange="calcularSubtotal({{ $productoCount }})">
                             </td>
                             <td>
