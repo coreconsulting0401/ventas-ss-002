@@ -57,6 +57,9 @@ class RolePermissionSeeder extends Seeder
         $GerenteRole = Role::create(['name' => 'Gerente']);
         $vendedorRole = Role::create(['name' => 'Vendedor']);
         $almacenRole = Role::create(['name' => 'Almacén']);
+        $exrabajadorRole = Role::create(['name' => 'Extrabajador']);
+
+        // sin permisos para extrabajador, solo acceso a su perfil
 
 
         // Administrador: TODOS los permisos
@@ -107,6 +110,8 @@ class RolePermissionSeeder extends Seeder
 
         $GerenteRole->givePermissionTo($GerentePermissions);
 
+        $exrabajadorRole->givePermissionTo('view users');
+
         // Crear usuarios de ejemplo
         $Admin = User::create([
             'name' => 'Luis Alberto Cusy Ricci',
@@ -145,6 +150,17 @@ class RolePermissionSeeder extends Seeder
             'codigo' => 'ALM-001',
         ]);
         $almacenero->assignRole('Almacén');
+
+        $extrabajador = User::create([
+            'name' => 'Pedro P.Extrabajador',
+            'dni' => '11223644',
+            'email' => 'extrabajador@proformas.com',
+            'password' => Hash::make('password'),
+            'codigo' => 'EXT-001',
+        ]);
+        $extrabajador->assignRole('Extrabajador');
+
+
 
         $this->command->info('✅ Roles y permisos creados exitosamente!');
         $this->command->info('📧 Usuario Administrador del sistema: dacluis7@gmail.com / Luis1313155');

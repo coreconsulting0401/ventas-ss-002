@@ -37,24 +37,28 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // 2. Rutas protegidas (Excluye al Extrabajador)
+    // Solo personal activo con roles específicos
+    Route::middleware(['role:Administrador|Gerente|Vendedor|Almacén'])->group(function () {
 
-    Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // ── Importación de Productos ─────────────────────────────────────────────
+        Route::get('/productos/import/template', [ProductoImportController::class, 'downloadTemplate'])
+            ->name('productos.import.template');
+        Route::post('/productos/import', [ProductoImportController::class, 'import'])
+            ->name('productos.import');
+
+        // ── Resources ─────────────────────────────────────────────────────────────
+        Route::resource('productos',  ProductoController::class);
+        Route::resource('descuentos', DescuentoController::class);
+    });
 
 
-
-    // ── Importación de Productos ─────────────────────────────────────────────
-    Route::get('/productos/import/template', [ProductoImportController::class, 'downloadTemplate'])
-        ->name('productos.import.template');
-    Route::post('/productos/import', [ProductoImportController::class, 'import'])
-        ->name('productos.import');
-
-
-    Route::resource('productos',     ProductoController::class);
-
-    Route::resource('descuentos',    DescuentoController::class);
 
     // Aplicar protección general para Administrador, Gerente y Vendedor
     Route::middleware(['role:Administrador|Gerente|Vendedor'])->group(function () {
