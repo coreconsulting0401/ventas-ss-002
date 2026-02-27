@@ -363,7 +363,7 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                 </div>
             </div>
             @endhaspermission
-            @hasanyrole('Administrador|Gerente|Vendedor')
+            @haspermission('view cambios')
             <div class="col-auto">
                 <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 14px;">
                     <div style="font-size:.65rem;opacity:.7;text-transform:uppercase;letter-spacing:.06em;">Mis ventas ganadas</div>
@@ -377,7 +377,7 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                     <div style="font-size:1.1rem;font-weight:700;">{{ $clientesNuevos30d }}</div>
                 </div>
             </div>
-            @endhasanyrole
+            @endhaspermission
         </div>
     </div>
 
@@ -428,7 +428,7 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
             </div>
         </div>
 
-        @hasanyrole('Administador|Gerente')
+        @haspermission('edit cambios')
         <div class="col-xl-2 col-lg-4 col-md-4 col-6">
             <div class="kpi-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
@@ -440,8 +440,9 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                 <div class="kpi-sub">Proformas ganadas</div>
             </div>
         </div>
+        @endhaspermission
 
-
+        @haspermission('edit cambios')
         <div class="col-xl-2 col-lg-4 col-md-4 col-6">
             <div class="kpi-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
@@ -453,7 +454,9 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                 <div class="kpi-sub">Histórico acumulado</div>
             </div>
         </div>
+        @endhaspermission
 
+        @haspermission('edit cambios')
         <div class="col-xl-2 col-lg-4 col-md-4 col-6">
             <div class="kpi-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
@@ -465,7 +468,7 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                 <div class="kpi-sub">Cotizadas → Ganadas</div>
             </div>
         </div>
-        @endhasanyrole
+        @endhaspermission
 
     </div>
 
@@ -522,7 +525,7 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
     ══════════════════════════════════════════════════ --}}
     <div class="row g-3 mb-4">
 
-        @hasanyrole('Administador|Gerente')
+    @haspermission('edit cambios')
         {{-- Top Clientes bar chart + lista --}}
         <div class="col-xl-5">
             <div class="dash-card h-100">
@@ -597,7 +600,8 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                 </div>
             </div>
         </div>
-        @endhasanyrole
+    @endhaspermission
+
         {{-- Bajo Stock + Moneda --}}
         <div class="col-xl-4">
             <div class="dash-card mb-3">
@@ -624,7 +628,7 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                     @endforelse
                 </div>
             </div>
-            @hasanyrole('Administador|Gerente')
+            @haspermission('edit cambios')
             {{-- Moneda split --}}
             <div class="dash-card">
                 <div class="dash-card-header">
@@ -642,7 +646,7 @@ body { background: var(--dash-bg); font-family: 'DM Sans', sans-serif; }
                     @endforeach
                 </div>
             </div>
-            @endhasanyrole
+            @endhaspermission
         </div>
 
     </div>

@@ -22,11 +22,13 @@ class Proforma extends Model
         'transaccion_id', 'temperatura_id', 'estado_id',
         'nota', 'orden', 'fecha_creacion', 'fecha_fin',
         'moneda', 'sub_total', 'monto_igv', 'total',
+        'fecha_fin_update_count',
     ];
 
     protected $casts = [
-        'fecha_creacion' => 'date',
-        'fecha_fin'      => 'date',
+        'fecha_creacion'         => 'date',
+        'fecha_fin'              => 'date',
+        'fecha_fin_update_count' => 'integer',
     ];
 
     protected static function boot()

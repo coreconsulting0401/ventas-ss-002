@@ -15,7 +15,9 @@ use App\Models\Virtual;
 use App\Models\Transaccion;
 use App\Models\Temperatura;
 use App\Models\Estado;
+use App\Models\User;
 use App\Http\Requests\ProformaRequest;
+use App\Notifications\FechaFinActualizadaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -158,6 +160,35 @@ class ProformaController extends Controller
             if (isset($data['direccion_id']) && $data['direccion_id'] === 'principal') {
                 $data['direccion_id'] = null;
             }
+
+            // ── Lógica de contador fecha_fin para Vendedor ───────────────────
+            /** @var User $authUser */
+            $authUser        = Auth::user();
+            $esVendedor      = $authUser->hasRole('Vendedor');
+            $fechaFinCambio  = isset($data['fecha_fin'])
+                               && $data['fecha_fin'] != $proforma->fecha_fin?->format('Y-m-d');
+
+            if ($esVendedor && $fechaFinCambio) {
+                $nuevoCount = $proforma->fecha_fin_update_count + 1;
+                $data['fecha_fin_update_count'] = $nuevoCount;
+
+                // Cuarta (o posterior) modificación → notificar
+                if ($nuevoCount >= 4) {
+                    // Notificar al propio vendedor
+                    $authUser->notify(
+                        new FechaFinActualizadaNotification($proforma, $authUser, $nuevoCount, 'vendedor')
+                    );
+
+                    // Notificar a todos los Gerentes
+                    $gerentes = User::role('Gerente')->get();
+                    foreach ($gerentes as $gerente) {
+                        $gerente->notify(
+                            new FechaFinActualizadaNotification($proforma, $authUser, $nuevoCount, 'gerente')
+                        );
+                    }
+                }
+            }
+            // ────────────────────────────────────────────────────────────────
 
             $proforma->update($data);
 

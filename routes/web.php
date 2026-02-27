@@ -30,6 +30,8 @@ use App\Http\Controllers\CambioController;
 use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificacionController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,9 +43,20 @@ Route::middleware(['auth'])->group(function () {
     // Solo personal activo con roles específicos
     Route::middleware(['role:Administrador|Gerente|Vendedor|Almacén'])->group(function () {
 
-        Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/profile',           [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile',         [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password',  [ProfileController::class, 'updatePassword'])->name('password.update');
+        Route::delete('/profile',        [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        // ── Notificaciones ───────────────────────────────────────────────────
+        Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+            Route::get('/',                              [NotificacionController::class, 'index'])->name('index');
+            Route::get('/recientes',                     [NotificacionController::class, 'recientes'])->name('recientes');
+            Route::post('/{id}/leer',                    [NotificacionController::class, 'marcarLeida'])->name('leer');
+            Route::post('/leer-todas',                   [NotificacionController::class, 'marcarTodasLeidas'])->name('leer-todas');
+            Route::delete('/limpiar',                    [NotificacionController::class, 'limpiar'])->name('limpiar');
+            Route::delete('/{id}',                       [NotificacionController::class, 'destroy'])->name('destroy');
+        });
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

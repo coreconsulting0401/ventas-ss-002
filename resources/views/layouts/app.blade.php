@@ -683,8 +683,52 @@
             -->
 
             <div class="user-profile">
-                <div class="notification-badge">
-                    <i class="bi bi-bell" style="font-size: 1.2rem; color: #495057;"></i>
+                {{-- ── CAMPANA DE NOTIFICACIONES ── --}}
+                <div class="dropdown" id="notif-dropdown">
+                    <button class="btn p-0 border-0 bg-transparent position-relative"
+                            id="notifBtn"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-bell" style="font-size:1.25rem;color:#495057;"></i>
+                        <span id="notif-badge"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              style="font-size:.6rem;min-width:18px;display:none;">0</span>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-end shadow-lg p-0"
+                         aria-labelledby="notifBtn"
+                         style="width:360px;max-width:94vw;border-radius:12px;overflow:hidden;border:1px solid #e9ecef;">
+                        {{-- Header --}}
+                        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-white">
+                            <span style="font-size:.85rem;font-weight:700;color:#212529;">Notificaciones</span>
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none"
+                                    style="font-size:.75rem;color:#6c5dd3;"
+                                    onclick="marcarTodasLeidas(event)">
+                                Marcar todas leídas
+                            </button>
+                        </div>
+
+                        {{-- Lista dinámica --}}
+                        <div id="notif-list"
+                             style="max-height:380px;overflow-y:auto;background:#f8f9fa;">
+                            <div class="text-center py-4 text-muted" id="notif-empty" style="display:none;font-size:.82rem;">
+                                <i class="bi bi-bell-slash" style="font-size:1.8rem;display:block;margin-bottom:.4rem;"></i>
+                                Sin notificaciones nuevas
+                            </div>
+                            <div class="text-center py-3" id="notif-loading">
+                                <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                            </div>
+                        </div>
+
+                        {{-- Footer --}}
+                        <div class="border-top bg-white text-center py-2">
+                            <a href="{{ route('notificaciones.index') }}"
+                               style="font-size:.78rem;color:#6c5dd3;text-decoration:none;font-weight:600;">
+                                Ver todas las notificaciones <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="dropdown">
                     <div class="avatar" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -810,5 +854,127 @@
     </script>
 
     @stack('scripts')
+
+    {{-- ══ SISTEMA DE NOTIFICACIONES ══════════════════════════════════ --}}
+    <script>
+    (function () {
+        const CSRF    = document.querySelector('meta[name="csrf-token"]').content;
+        const baseUrl = '{{ url("/notificaciones") }}';
+
+        // ── Plantilla de ítem ─────────────────────────────────────────
+        function itemHtml(n) {
+            const colorMap = {
+                warning : { bg: '#fffbeb', border: '#fbbf24', txt: '#92400e', icon: '#d97706' },
+                danger  : { bg: '#fff1f2', border: '#fca5a5', txt: '#9f1239', icon: '#ef4444' },
+                primary : { bg: '#eff6ff', border: '#93c5fd', txt: '#1e3a8a', icon: '#3b82f6' },
+                success : { bg: '#f0fdf4', border: '#86efac', txt: '#14532d', icon: '#22c55e' },
+            };
+            const c = colorMap[n.color] ?? colorMap.primary;
+            return `
+            <div class="notif-item d-flex align-items-start gap-2 px-3 py-2"
+                 data-id="${n.id}"
+                 style="border-bottom:1px solid #e9ecef;background:${c.bg};cursor:pointer;transition:background .15s;"
+                 onclick="abrirNotif(event, '${n.id}', ${n.proforma_id ?? 'null'})">
+                <div style="width:34px;height:34px;flex-shrink:0;border-radius:8px;background:white;border:1px solid ${c.border};
+                            display:flex;align-items:center;justify-content:center;margin-top:2px;">
+                    <i class="bi ${n.icono}" style="color:${c.icon};font-size:.95rem;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:.78rem;font-weight:700;color:${c.txt};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        ${n.titulo}
+                    </div>
+                    <div style="font-size:.73rem;color:#374151;line-height:1.35;margin-top:1px;">
+                        ${n.mensaje}
+                    </div>
+                    <div style="font-size:.67rem;color:#6b7280;margin-top:3px;">${n.tiempo}</div>
+                </div>
+                <button onclick="eliminarNotif(event,'${n.id}')"
+                        title="Descartar"
+                        style="background:none;border:none;color:#9ca3af;padding:0;font-size:.8rem;flex-shrink:0;line-height:1;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>`;
+        }
+
+        // ── Cargar notificaciones ─────────────────────────────────────
+        function cargar() {
+            fetch(`${baseUrl}/recientes`, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
+                .then(r => r.json())
+                .then(({ notificaciones, total_no_leidas }) => {
+                    const list    = document.getElementById('notif-list');
+                    const loading = document.getElementById('notif-loading');
+                    const empty   = document.getElementById('notif-empty');
+                    const badge   = document.getElementById('notif-badge');
+
+                    if (loading) loading.style.display = 'none';
+
+                    // Badge
+                    if (total_no_leidas > 0) {
+                        badge.textContent = total_no_leidas > 99 ? '99+' : total_no_leidas;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+
+                    // Lista
+                    const items = notificaciones.map(itemHtml).join('');
+                    // Remover ítems viejos (mantener #notif-loading y #notif-empty)
+                    list.querySelectorAll('.notif-item').forEach(el => el.remove());
+
+                    if (notificaciones.length === 0) {
+                        empty.style.display = '';
+                        list.prepend(empty);
+                    } else {
+                        empty.style.display = 'none';
+                        list.insertAdjacentHTML('afterbegin', items);
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // ── Abrir notificación → marcar leída y redirigir ─────────────
+        window.abrirNotif = function (evt, id, proformaId) {
+            if (evt.target.closest('button')) return; // clic en X → no redirigir
+            fetch(`${baseUrl}/${id}/leer`, {
+                method : 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            }).then(() => {
+                if (proformaId) {
+                    window.location.href = `{{ url('/proformas') }}/${proformaId}`;
+                } else {
+                    window.location.href = `${baseUrl}`;
+                }
+            });
+        };
+
+        // ── Eliminar un ítem ──────────────────────────────────────────
+        window.eliminarNotif = function (evt, id) {
+            evt.stopPropagation();
+            fetch(`${baseUrl}/${id}`, {
+                method : 'DELETE',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            }).then(() => {
+                document.querySelector(`.notif-item[data-id="${id}"]`)?.remove();
+                cargar(); // refresca badge
+            });
+        };
+
+        // ── Marcar todas leídas ───────────────────────────────────────
+        window.marcarTodasLeidas = function (evt) {
+            evt.stopPropagation();
+            fetch(`${baseUrl}/leer-todas`, {
+                method : 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            }).then(() => cargar());
+        };
+
+        // ── Cargar al abrir el dropdown ───────────────────────────────
+        document.getElementById('notifBtn')?.addEventListener('show.bs.dropdown', cargar);
+
+        // ── Polling cada 60 s ─────────────────────────────────────────
+        cargar();
+        setInterval(cargar, 60000);
+    })();
+    </script>
 </body>
 </html>
