@@ -108,7 +108,7 @@
                 <!-- Footer -->
                 <div class="mt-20 text-gray-500 text-sm border-t border-white/10 pt-8">
                     <p class="mb-2">
-                        Desarrollado por <a href="https://tuempresa.com" class="text-orange-500 hover:underline">Tu Empresa</a>
+                        Desarrollado por <a href="https://tuempresa.com" class="text-orange-500 hover:underline">Core Consulting</a>
 
                     </p>
                     &copy; {{ date('Y') }} Sistema de Gestión de Proformas - Todos los derechos reservados.

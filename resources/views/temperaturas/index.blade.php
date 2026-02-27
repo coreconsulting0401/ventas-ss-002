@@ -7,9 +7,11 @@
     <h2>
         <i class="bi bi-thermometer-sun"></i> Gestión de Temperaturas
     </h2>
+    @haspermission('create temperaturas')
     <a href="{{ route('temperaturas.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> Nueva Temperatura
     </a>
+    @endhaspermission
 </div>
 @endsection
 

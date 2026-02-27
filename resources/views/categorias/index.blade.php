@@ -7,9 +7,11 @@
     <h2>
         <i class="bi bi-tag"></i> Gestión de Categorías
     </h2>
+    @haspermission('create categorias')
     <a href="{{ route('categorias.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> Nueva Categoría
     </a>
+    @endhaspermission
 </div>
 @endsection
 

@@ -7,9 +7,11 @@
     <h2>
         <i class="bi bi-flag"></i> Gestión de Estados
     </h2>
+    @haspermission('create estados')
     <a href="{{ route('estados.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> Nuevo Estado
     </a>
+    @endhaspermission
 </div>
 @endsection
 

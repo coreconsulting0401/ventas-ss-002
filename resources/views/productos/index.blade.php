@@ -8,12 +8,14 @@
         <i class="bi bi-box-seam"></i> Gestión de Productos
     </h2>
     <div class="d-flex gap-2">
+        @haspermission('create productos')
         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImportarExcel">
             <i class="bi bi-file-earmark-excel"></i> Carga masiva Excel
         </button>
         <a href="{{ route('productos.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Nuevo Producto
         </a>
+        @endhaspermission
     </div>
 </div>
 @endsection

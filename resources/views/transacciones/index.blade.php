@@ -7,9 +7,11 @@
     <h2>
         <i class="bi bi-coin"></i> Gestión de Transacciones
     </h2>
+    @haspermission('create transacciones')
     <a href="{{ route('transacciones.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> Nueva Transacción
     </a>
+    @endhaspermission
 </div>
 @endsection
 
