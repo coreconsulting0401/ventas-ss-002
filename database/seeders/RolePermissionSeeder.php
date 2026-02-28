@@ -114,10 +114,10 @@ class RolePermissionSeeder extends Seeder
 
         // Crear usuarios de ejemplo
         $Admin = User::create([
-            'name' => 'Luis Alberto Cusy Ricci',
+            'name' => 'Luis A. Administrador',
             'dni' => '42969452',
-            'email' => 'dacluis7@gmail.com',
-            'password' => Hash::make('Luis1313155'),
+            'email' => 'admin@proformas.com',
+            'password' => Hash::make('Luis*1313155'),
             'codigo' => 'ADM-001',
         ]);
         $Admin->assignRole('Administrador');
@@ -152,7 +152,7 @@ class RolePermissionSeeder extends Seeder
         $almacenero->assignRole('Almacén');
 
         $extrabajador = User::create([
-            'name' => 'Pedro P.Extrabajador',
+            'name' => 'Jaison J. Extrabajador',
             'dni' => '11223644',
             'email' => 'extrabajador@proformas.com',
             'password' => Hash::make('password'),

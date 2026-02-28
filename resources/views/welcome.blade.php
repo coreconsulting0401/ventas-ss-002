@@ -108,7 +108,7 @@
                 <!-- Footer -->
                 <div class="mt-20 text-gray-500 text-sm border-t border-white/10 pt-8">
                     <p class="mb-2">
-                        Desarrollado por <a href="https://web.whatsapp.com/send?phone=51933611628&text=*%C2%A1Hola+Core+Consulting%21*%0ADeseo+informaci%C3%B3n+sobre+un+proyecto+de+software.%0A%0A%C2%A1Gracias!" target="_blank" class="text-orange-500 hover:underline">Core Consulting</a>
+                        Desarrollado por <a href="https://core-consulting.pe/" target="_blank" class="text-orange-500 hover:underline">Core Consulting</a>
 
                     </p>
                     &copy; {{ date('Y') }} Sistema de Gestión de Proformas - Todos los derechos reservados.
