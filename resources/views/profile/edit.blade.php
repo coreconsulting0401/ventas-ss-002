@@ -312,7 +312,9 @@
             </div>
         </div>
 
-        {{-- ══ 3. ELIMINAR CUENTA ══ --}}
+
+
+        {{-- ══ 3. ELIMINAR CUENTA ══
         <div class="card border-danger" style="border-width:1px;">
             <div class="card-header" style="background:#fff1f2;border-bottom:1px solid #fca5a5;">
                 <h5 class="mb-0 text-danger" style="font-size:.9rem;font-weight:700;">
@@ -331,6 +333,8 @@
                 </button>
             </div>
         </div>
+        --}}
+
 
     </div>{{-- /col-lg-9 --}}
 </div>{{-- /row --}}
